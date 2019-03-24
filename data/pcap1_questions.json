@@ -1,0 +1,44 @@
+{
+	  "event_id": "PCAP_1",
+  "artifacts": {
+    "file": "sec-clientdying.pcapng"
+  },
+  "questions": [
+    {
+      "question": "What is the name of the malicious executable?",
+      "answer": "ysbinstall_1000489_3.exe",
+      "validation": [
+        "Apply filter tcp.stream eq 16 || tcp contains exe",
+        "Right click on any packet and select follow TCP stream",
+        "Look for “this program cannot run in dos mode”"
+      ]
+    },
+    {
+      "question": "What is the source IP address of the malicious download?",
+      "answer": "216.127.33.119",
+      "validation": [
+        "Apply filter tcp.stream eq 16 || tcp contains exe",
+        "Check Packet 183 ip.destination feild"
+      ]
+    },
+    {
+      "question": "What is the IP address of the IRC server?",
+      "answer": "69.64.34.124",
+      "validation": [
+        "Apply filter'irc'"
+      ]
+    },
+    {
+      "question": "For the DNS query,  which flag is set for the hostname www.ysbweb.com?",
+      "answer": "Recursion desired: Do query recursively",
+      "validation": [
+        "apply filter 'dns'",
+        "open packet 150",
+        "open DNS header",
+        "Open Flags",
+        "look for 'Recursion desired: Do query recursively'"
+      ]
+    }
+  ]
+
+}

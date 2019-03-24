@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/main.css">
+    <title>Document</title>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+
+        <div class="col-4"></div>
+        <div class="col-4">
+            <img class="center" src="../static/img/cw_logo_bg.jpg"
+                 alt="Best Cyber Warrior Logo">
+        </div>
+        <div class="col-4"></div>
+
+    </div>
+    <div class="row" style="margin-top: 50px">
+
+        <div class="col-4"></div>
+        <div class="col-4">
+            <form method="POST" action="{{ url_for('login') }} " class="form form-horizontal">
+                {{ form.csrf_token }}
+                <div class="form-group">
+                    <label class="MontserratBlack" for="exampleInputEmail1">Team Name:</label>
+                    <div class="">{{ form.username(class='form-control') }}</div>
+
+                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label class="MontserratBlack" for="exampleInputPassword1">Password</label>
+                    <div>{{ form.password(class='form-control') }}</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+        </div>
+    </div>
+    <div class="col text-center MontserratBlack" style="margin-top: 50px;">
+        <div class="h4 ">USARCENT <span style="color: red">ScoreKeeper</span></div>
+        <img  src="../static/img/usarcent_logo.png" alt="">
+
+    </div>
+
+</div>
+</div>
+
+</body>
+</html>
