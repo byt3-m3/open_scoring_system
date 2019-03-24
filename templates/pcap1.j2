@@ -1,93 +1,90 @@
-{% include 'home.j2' %}
+{% extends 'base.j2' %}
 
-<div class="container" style="margin-top: 50px">
-    <div class="col-6 center">
-        <h1 class="MontserratBlack">PCAP Level 1:</h1><br>
+{% block  content %}
+
+    <div class="container" style="margin-top: 50px">
+        <h1 class="MontserratBlack">{{ event_data.title }}:</h1><br>
+        <div class="col center">
 
 
-        <div class="QuestionBody" style="font-size: 20px">
+            <div class="QuestionBody" style="font-size: 20px">
 
 
+            </div>
+
+            <hr>
         </div>
 
-
-        <br>
-
-        <br>
-        <hr>
     </div>
 
-</div>
-
-<script>
+    <script>
 
 
-    $(document).ready(function () {
-        // Generates questions from the database on the WebSite
-        {% for question in questions %}
+        $(document).ready(function () {
+            // Generates questions from the database on the WebSite
+            {% for question in questions %}
 
-            $('.QuestionBody').append('<label class="MontserratBlack" class="{{ question.q_id }}" for="{{ question.q_id }}">{{ question.text }}</label>\n' +
-                '            <input class="form-control" id="{{ question.q_id }}" type="text"> ')
+                $('.QuestionBody').append('<label class="MontserratBlack" class="{{ question.q_id }}" for="{{ question.q_id }}">{{ question.text }}</label>\n' +
+                    '            <input class="form-control" id="{{ question.q_id }}" type="text"> ')
 
-        {% endfor %}
+            {% endfor %}
 
 
-        {% for resp in event_responses %}
-            $('#{{ resp.q_id }}').val("{{ resp.response }}")
+            {% for resp in event_responses %}
+                $('#{{ resp.q_id }}').val("{{ resp.response }}")
 
 
 
-            console.log($('#{{ resp.q_id }}'))
+                console.log($('#{{ resp.q_id }}'))
 
-        {% endfor %}
-
-
-        $("input").blur(function () {
-            // Will check if the correct answer is supplied, if not the label turns red, if correct the label turns green
-            var myElement = this
-
-            if (this.value) {
-                var response = this.value;
-                var q_id = this.id;
-                var event_id = "{{event_data.event_id}}";
-                console.log("{{event_data.event_id}}");
-                console.log(q_id)
-                $.ajax({
-                        url: '{{ url_for("validate_resp") }}',
-                        data: {"response": response, "q_id": q_id, "event_id": event_id},
-                        method: 'POST',
-                        statusCode: {
-                            200: function (response) {
-                                if (response.result === false) {
-                                    $(`label[for=${q_id}]`).css({color: "red"})
+            {% endfor %}
 
 
+            $("input").blur(function () {
+                // Will check if the correct answer is supplied, if not the label turns red, if correct the label turns green
+                var myElement = this
 
-                                } else {
+                if (this.value) {
+                    var response = this.value;
+                    var q_id = this.id;
+                    var event_id = "{{event_data.event_id}}";
+                    console.log("{{event_data.event_id}}");
+                    console.log(q_id)
+                    $.ajax({
+                            url: '{{ url_for("validate_resp") }}',
+                            data: {"response": response, "q_id": q_id, "event_id": event_id},
+                            method: 'POST',
+                            statusCode: {
+                                200: function (response) {
+                                    if (response.result === false) {
+                                        $(`label[for=${q_id}]`).css({color: "red"})
 
-                                    $(`label[for=${q_id}]`).css({color: "green"})
-                                    $.get("http://127.0.0.1:5000/getscore", function (data) {
-                                        // jQuery used to update the score
-                                        $("#TeamScore").html(data)
-                                    })
+
+                                    } else {
+
+                                        $(`label[for=${q_id}]`).css({color: "green"})
+                                        $.get("http://127.0.0.1:5000/getscore", function (data) {
+                                            // jQuery used to update the score
+                                            $("#TeamScore").html(data)
+                                        })
+                                    }
+
+
                                 }
-
-
                             }
+
                         }
-
-                    }
-                )
+                    )
 
 
-            } else {
-                $(`label[for=${this.id}]`).css({color: "black"})
-            }
+                } else {
+                    $(`label[for=${this.id}]`).css({color: "black"})
+                }
 
 
+            })
         })
-    })
 
-</script>
-
+    </script>
+{% endblock %}
 {#{% endblock %}#}

@@ -1,3 +1,17 @@
+
+
+.MainFontColor {
+    color: #761037
+}
+
+.MainFontColor2 {
+    color: #120682;
+}
+
+.DropDownFontSize {
+    font-size: 20px;
+}
+
 .TextFont {
     font-family: "monospace", Montserrat-Black;
 }

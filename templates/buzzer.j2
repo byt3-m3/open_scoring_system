@@ -1,0 +1,69 @@
+{% extends 'base.j2' %}
+
+{% block  content %}
+    <style>
+        .buzzer_button {
+            padding: 15px 25px;
+            font-size: 24px;
+            text-align: center;
+            cursor: pointer;
+            outline: none;
+            width: 200px;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 9px #999;
+        }
+
+        .buzzer_button:hover {
+            background-color: #3e8e41
+        }
+
+        .buzzer_button:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+    </style>
+
+    <audio src="../static/buzzer_sound.mp3" id="BUZZER_SOUND">
+    test
+</audio>
+
+
+
+    <div class="container" >
+        <div class="row justify-content-center">
+
+            <div class="h1 MontserratBlack MainFontColor2">USARCENT Buzzer</div>
+        </div>
+
+        <div class="row justify-content-center" style="border: red thick">
+
+            <div class="col-6 center">
+                <hr>
+                <input id="USER_RESP" class="form-control" type="text" style="margin-bottom: 30px;text-align: center;height: 150px; font-size: 30px">
+
+            </div>
+
+
+
+        </div>
+
+        <div class="row justify-content-center">
+                <button class="buzzer_button btn-primary" id="BUZZER_BTN">Buzz</button>
+            </div>
+
+
+    </div>
+    <script>
+
+        // Trigger the Buzzer sound once the button is push
+        $('#BUZZER_BTN').click(function () {
+            $('#BUZZER_SOUND').trigger('play')
+        })
+
+    </script>
+
+{% endblock %}

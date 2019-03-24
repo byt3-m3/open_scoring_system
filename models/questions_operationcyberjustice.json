@@ -1,0 +1,36 @@
+{
+    "event_id": "OCJ",
+    "artifacts": {
+        "file": ""
+    },
+    "questions": [
+        {
+            "q_id": "OCJ_1",
+            "text": "What is the locations of the backup file?",
+            "answer": "ysbinstall_1000489_3.exe",
+            "validation": [],
+            "point_value": 25
+        },
+        {
+            "q_id": "OCJ_2",
+            "text": "What is the admin password used to access the webserver?",
+            "answer": "/ealderson/stuff",
+            "validation": [],
+            "point_value": 25
+        },
+        {
+            "q_id": "OCJ_3",
+            "text": "What is the IP address of the webserver server?",
+            "answer": "192.168.1.1",
+            "validation": [],
+            "point_value": 25
+        },
+        {
+            "q_id": "OCJ_4",
+            "text": "Provide the Frist and Last name of the social media acconut resposible for the hack.",
+            "answer": "Ivan Sobol",
+            "validation": [],
+            "point_value": 25
+        }
+    ]
+}

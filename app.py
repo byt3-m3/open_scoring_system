@@ -60,7 +60,7 @@ def home():
 
     team_doc = team_db.get_team_doc(session['username'])
 
-    return render_template("home.j2", team_data=team_doc)
+    return render_template("index.j2", team_data=team_doc)
 
 
 @app.route('/')
@@ -102,19 +102,43 @@ def pcap2():
 @app.route('/pcap3', methods=['GET', 'POST'])
 def pcap3():
     event_data = event_db.get_event("PCAP3")
-
+    event_responses = team_db.get_responses_by_event_id(session['username'], 'PCAP3')
     event_questions = event_db.get_event_questions("PCAP3")
 
     team_doc = team_db.get_team_doc(session['username'])
 
-    return render_template("pcap1.j2", team_data=team_doc, questions=event_questions, event_data=event_data)
+    return render_template("pcap1.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
+                           event_responses=event_responses)
+
+
 
 
 @app.route("/opcyberjustice")
 def opcyberjustice():
     team_obj = team_db.get_team_doc(session['username'])
-    return render_template("opcyberjustice.j2", team_data=team_obj)
+    event_data = event_db.get_event("OCJ")
 
+    event_responses = team_db.get_responses_by_event_id(session['username'], 'OCJ')
+    print(event_responses)
+    event_questions = event_db.get_event_questions("OCJ")
+
+    team_doc = team_db.get_team_doc(session['username'])
+
+    return render_template("pcap1.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
+                           event_responses=event_responses)
+
+
+@app.route('/buzzer', methods=['GET', 'POST'])
+def buzzer():
+    event_data = event_db.get_event("PCAP3")
+    event_responses = team_db.get_responses_by_event_id(session['username'], 'PCAP3')
+    event_questions = event_db.get_event_questions("PCAP3")
+
+    team_doc = team_db.get_team_doc(session['username'])
+
+
+    return render_template("buzzer.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
+                           event_responses=event_responses)
 
 # Routes used for FrontEnd data calls
 @app.route("/getscore")
@@ -154,7 +178,7 @@ def validate_resp():
             if question.q_id == q_id:
 
                 single_resp = team_db.get_response_by_event_id(session['username'], event_id, q_id)
-
+                print(single_resp)
                 # Triggers if the q_id is already present in the response list
                 if single_resp:
                     if single_resp['q_id'] == q_id:
@@ -195,7 +219,7 @@ def validate_resp():
                     team_obj['points'] += int(question.point_value)
                     team_obj['responses'].append(new_response)
                     print("Bad Hit")
-                    # print(new_response)
+
                     team_db.update_data(session['username'], team_obj)
                     del team_obj
                     return Response(json.dumps({"result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
@@ -213,9 +237,9 @@ def dropsession():
     session.pop('username', None)
     return redirect(url_for("login"))
 
+
 @app.route('/rest_response')
 def reset_response():
-
     if team_db.reset_responses(session['username']):
         return Response
 

@@ -1,20 +1,30 @@
-{% include 'home.j2' %}
+{% extends 'base.j2' %}
 
-<div class="container" style="margin-top: 20px">
-    <div class="row text-center">
+{% block  content %}
 
-        <div class="col">
+    <div class="container" style="margin-top: 20px">
+        <div class="row text-center">
 
-            <article class="Montserrat">You have been called on for your cyber security knowledge, to assist in the protection of BG Olives
-                Annual Cyber Warrior event. Your Job is to protect her website from any potential threats that may be
-                lurking on the net. We have been monitoring the new social media site n Gage, and intel indicates there
-                is a high chance of malicious activity occurring on cyber warrior website. Your team has been provided a
-                PCAP file to start your mission. Security Operations Center and its skilled analyst have quite the
-                reputation and we are counting on you to help protect our interest. Stay vigilant and remember Cyber
-                Never Sleeps. This message will now self destruct.</article>
+            <div class="col">
+
+                <article class="Montserrat">You have been called on for your cyber security knowledge, to assist in the
+                    protection of BG Olives
+                    Annual Cyber Warrior event. Your Job is to protect her website from any potential threats that may
+                    be
+                    lurking on the net. We have been monitoring the new social media site n Gage, and intel indicates
+                    there
+                    is a high chance of malicious activity occurring on cyber warrior website. Your team has been
+                    provided a
+                    PCAP file to start your mission. Security Operations Center and its skilled analyst have quite the
+                    reputation and we are counting on you to help protect our interest. Stay vigilant and remember Cyber
+                    Never Sleeps. This message will now self destruct.
+                </article>
+
+            </div>
 
         </div>
 
     </div>
 
-</div>
+{% endblock %}
+

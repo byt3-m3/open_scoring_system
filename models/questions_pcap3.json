@@ -1,0 +1,39 @@
+{
+	"event_id" : "PCAP3",
+    "title": "PCAP Level 3",
+    "artifacts" : {
+        "file" : "sec-evilprogram.pcapng"
+    },
+    "questions" : [
+        {
+            "q_id" : "PCAP3_1",
+            "text" : "What is the name malicious executable?",
+            "answer" : "bkinst.exe",
+            "point_value" : 25,
+            "validation" : [
+                "Apply filter 'ftp'"
+            ]
+        },
+        {
+            "q_id" : "PCAP3_2",
+            "text" : "What are the IP address of the server where the malicious file is located?",
+            "answer" : "208.48.15.13",
+            "point_value" : 25,
+            "validation" : [
+                "Apply filter 'ftp'",
+                "review info column"
+            ]
+        },
+        {
+            "q_id" : "PCAP3_3",
+            "text" : "What are the server type and build date of the IP 209.123.150.14?",
+            "answer" : "V-soft\\NOYAU\\VADV 1.3 builded August 18 2004\n",
+            "point_value" : 25,
+            "validation" : [
+                "right click on ftp packet, click follow tcp stream",
+                "Look for 'USER'"
+            ]
+        }
+    ]
+
+	}

@@ -1,0 +1,47 @@
+{    
+	"event_id" : "PCAP1",
+    "artifacts" : {
+        "file" : "sec-brutforce.pcapng"
+    },
+    "questions" : [ 
+        {
+            "q_id" : "PCAP1_1",
+            "text" : "What protocol is being used to connect to the destination?",
+            "answer" : "FTP",
+            "point_value" : 25,
+            "validation" : [ 
+                "Apply filter 'ftp'"
+            ]
+        }, 
+        {
+            "q_id" : "PCAP1_2",
+            "text" : "What is the URL the attacker trying to gain access to?",
+            "answer" : "creditus.com",
+            "point_value" : 25,
+            "validation" : [ 
+                "Apply filter 'ftp'", 
+                "review info column"
+            ]
+        }, 
+        {
+            "q_id" : "PCAP1_3",
+            "text" : "What username is the attacker attempting to use?",
+            "answer" : "Fred",
+            "point_value" : 25,
+            "validation" : [ 
+                "right click on ftp packet, click follow tcp stream", 
+                "Look for 'USER'"
+            ]
+        }, 
+        {
+            "q_id" : "PCAP1_4",
+            "text" : "What type of attack is the user attempt to execute?",
+            "point_value" : 25,
+            "answer" : "bruteforce",
+            "validation" : [ 
+                "Based on the number for TCP attempts, this signifies a classic bruteforce"
+            ]
+        }
+    ]
+	
+	}
