@@ -8,7 +8,7 @@
             text-align: center;
             cursor: pointer;
             outline: none;
-            width: 200px;
+            width: 150px;
             color: #fff;
             background-color: #4CAF50;
             border: none;
@@ -27,42 +27,121 @@
         }
     </style>
 
-    <audio src="../static/buzzer_sound.mp3" id="BUZZER_SOUND">
-    test
-</audio>
+    <audio src="../static/buzzer_sound2.mp3" id="BUZZER_SOUND">
+        test
+    </audio>
 
 
 
-    <div class="container" >
+    <div class="container">
         <div class="row justify-content-center">
 
             <div class="h1 MontserratBlack MainFontColor2">USARCENT Buzzer</div>
         </div>
 
-        <div class="row justify-content-center" style="border: red thick">
+        <div class="row justify-content-center">
 
             <div class="col-6 center">
                 <hr>
-                <input id="USER_RESP" class="form-control" type="text" style="margin-bottom: 30px;text-align: center;height: 150px; font-size: 30px">
 
+                <input id="USER_RESP" class="form-control" type="text"
+                       style="margin-bottom: 30px;text-align: center;height: 150px; font-size: 30px">
+
+
+                <hr style="color: #761037">
             </div>
-
 
 
         </div>
 
         <div class="row justify-content-center">
+            <div class="col-lg-offset-3 col-sm-offset-3">
                 <button class="buzzer_button btn-primary" id="BUZZER_BTN">Buzz</button>
+                <button class="buzzer_button btn-secondary" id="BUZZER_BTN_2" style="margin-left: 10px">Reset</button>
             </div>
+
+        </div>
 
 
     </div>
     <script>
+        $('document').ready(function () {
 
-        // Trigger the Buzzer sound once the button is push
-        $('#BUZZER_BTN').click(function () {
-            $('#BUZZER_SOUND').trigger('play')
+
+
+            // Triggers a reset of the forum and removal of the buzzer record in the database
+            $('#BUZZER_BTN_2').click(function () {
+                $.ajax({
+                        url: '{{ url_for("buzzer_clear") }}',
+                        data: {},
+                        method: 'POST',
+                        statusCode: {
+                            200: function (response) {
+
+                                if (response.result === true) {
+                                    $('#BUZZER_BTN').text("Try Again").attr('disabled', false);
+                                    $('#USER_RESP').attr('readonly', false).val("")
+                                    alert("Your Response has been forfeited, Better Hope you weren't right!!!")
+                                } else {
+                                    {#alert("Unable Clear Response")#}
+                                }
+
+
+                            }
+                        }
+
+                    }
+                )
+            })
+
+            // Trigger the Buzzer sound once the button is push
+            $('#BUZZER_BTN').click(function () {
+                $('#BUZZER_SOUND').trigger('play')
+
+                var input_data = $('#USER_RESP').val()
+                var team_name = "{{ team_data.name }}"
+
+
+                $.ajax({
+                        url: '{{ url_for("buzzed") }}',
+                        data: {"user_resp": input_data, "team_name": team_name},
+                        method: 'POST',
+                        statusCode: {
+                            200: function (response) {
+
+                                if (response.result === true) {
+                                    $('#USER_RESP').attr('readonly', true)
+                                    $('#BUZZER_BTN').attr('disabled', true).text("Submited")
+                                }
+
+
+                            }
+                        }
+
+                    }
+                )
+            })
+
+            // On page load, checks if response is in the buzzer database, if so populates teh fields and disables
+            // the buzzer button and user response input feild.
+            $.ajax({
+                url: '{{ url_for("buzzer_load") }}',
+                data: {},
+                method: 'POST',
+                statusCode: {
+                    200: function (response) {
+                        if (response.result === true) {
+                            $('#USER_RESP').val(String(response.doc.response)).attr('readonly', true)
+                            $('#BUZZER_BTN').attr('disabled', true).text("Submited")
+                        }
+
+
+                    }
+
+                }
+            })
         })
+
 
     </script>
 

@@ -13,20 +13,20 @@
 <body>
 
 <div class="container">
-    <div class="row">
+    <div class="row justify-content-center">
 
-        <div class="col-4"></div>
-        <div class="col-4">
+
+        <div class="col">
             <img class="center" src="../static/img/cw_logo_bg.jpg"
                  alt="Best Cyber Warrior Logo">
         </div>
-        <div class="col-4"></div>
+
 
     </div>
-    <div class="row" style="margin-top: 50px">
+    <div class="row justify-content-center" style="margin-top: 50px">
 
-        <div class="col-4"></div>
-        <div class="col-4">
+
+        <div class="col">
             <form method="POST" action="{{ url_for('login') }} " class="form form-horizontal">
                 {{ form.csrf_token }}
                 <div class="form-group">

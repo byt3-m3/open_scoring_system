@@ -1,0 +1,84 @@
+{% extends 'base.j2' %}
+
+{% block  content %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <select class="mdb-select md-form form-control MontserratBlack"
+                        style="margin-bottom: 20px;font-size: 20px">
+                    <option style="font-size: 25px" value="" disabled selected>Select Activity</option>
+                    {% for game in games_list %}
+                        <option style="font-size: 25px" value={{ game.event_id }}>{{ game.title }}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+
+        </div>
+        <div class="row">
+
+
+            <div id="TEAM_SET_1" class="col-4">
+
+
+            </div>
+            <div id="TEAM_SET_2" class="col-4">
+
+
+            </div>
+            <div id="TEAM_SET_3" class="col-4">
+
+
+            </div>
+
+
+        </div>
+        <div class="row">
+
+            <div class="col" style="margin-top: 30px">
+                <button type="button" class="btn btn-primary">Submit</button>
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <script>
+        var docs = {{ team_docs }};
+
+
+        var docs_1 = docs.splice(0, 5)
+        var arrayLength_1 = docs_1.length;
+        for (var i = 0; i < arrayLength_1; i++) {
+            console.log(docs_1[i]);
+            //Do something
+
+            $('#TEAM_SET_1').append(`<span class="MontserratBlack"> ${docs_1[i].name}</span> <input id="${docs_1[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_1[i].name} points">`)
+        }
+
+        var docs_2 = docs.splice(0, 5)
+        var arrayLength_2 = docs_2.length;
+        for (var i = 0; i < arrayLength_2; i++) {
+            console.log(docs_2[i]);
+            //Do something
+
+            $('#TEAM_SET_2').append(`<span class="MontserratBlack"> ${docs_2[i].name}</span> <input id="${docs_2[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_2[i].name} points">`)
+        }
+
+        var docs_3 = docs.splice(0, 5)
+        var arrayLength_3 = docs_3.length;
+        for (var i = 0; i < arrayLength_3; i++) {
+            console.log(docs_3[i]);
+            //Do something
+
+            $('#TEAM_SET_3').append(`<span class="MontserratBlack"> ${docs_3[i].name}</span> <input id="${docs_3[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_3[i].name} points">`)
+        }
+
+
+        {#console.log(docs.splice(0, 5));#}
+        {#console.log(docs.splice(0, 5))#}
+    </script>
+
+{% endblock %}

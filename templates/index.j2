@@ -1,9 +1,61 @@
 {% extends 'base.j2' %}
 
 {% block  content %}
-
     <div class="container">
-        Scores and Positions Go Here
+
+        <div class="row justify-content-center" style="margin-bottom: 20px">
+            <div class="h1 MontserratBlack MainFontColor">Leader Board</div>
+        </div>
+
+        <div class="row justify-content-center">
+
+            <div class="col">
+
+                <table class="table justify-content-center">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Position</th>
+                        <th scope="col">Team Name</th>
+                        <th scope="col">Point Total</th>
+
+                    </tr>
+                    </thead>
+                    <tbody id="TABLE_BODY">
+
+                    </tbody>
+                </table>
+
+
+            </div>
+
+
+            <br>
+            <br>
+            <br>
+
+        </div>
+
     </div>
+
+    <script>
+
+    $('document').ready(function () {
+
+        {% for doc in sorted_docs %}
+            $('#TABLE_BODY').append("<tr>\n" +
+                "                        <th scope=\"row\">{{ doc.index }}</th>\n" +
+                "                        <td>{{ doc.name }}</td>\n" +
+                "                        <td>{{ doc.points }}</td>\n" +
+                "\n" +
+                "                    </tr>").addClass("MontserratThin")
+
+
+        {% endfor %}
+
+
+
+    })
+
+    </script>
 
 {% endblock %}

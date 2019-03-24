@@ -1,3 +1,7 @@
+import time
+from datetime import datetime
+from pprint import pprint
+
 from pymongo import MongoClient
 
 
@@ -81,6 +85,11 @@ class EventsDB:
 
         return question_list
 
+    def get_game_list(self):
+        doc = self.collections.find_one({'event_id': "GAME_LIST"})
+
+        return doc['artifacts']['events']
+
     def get_event(self, event_id):
         result = self.collections.find_one({"event_id": event_id})
         return result
@@ -100,6 +109,28 @@ class TeamsDB:
     def get_points(self, name):
         doc = self.get_team_doc(name)
         return doc['points']
+
+    def get_teams_positions(self):
+        docs = self.get_all_docs()
+        if len(docs) > 0:
+            return sorted(docs, key=lambda i: i['points'], reverse=True)
+        else:
+            return docs
+
+    def get_all_docs(self):
+        _docs = self.collections.find({})
+        docs = []
+        if _docs:
+            for doc in _docs:
+                del doc['responses']
+                del doc['passwd']
+                del doc['_id']
+                docs.append(doc)
+            return docs
+        else:
+            return []
+
+        pass
 
     def get_team_doc(self, name):
         for doc in self.collections.find({"name": name}):
@@ -159,6 +190,14 @@ class TeamsDB:
 
         return False
 
+    def reset_all_responses(self):
+        docs = self.get_all_docs()
+        if len(docs) > 0:
+            for doc in docs:
+                self.reset_responses(doc['name'])
+            return True
+
+        return False
 
     def add_team(self, name, passwd):
         doc = self._default_model()
@@ -199,41 +238,180 @@ class TeamsDB:
         }
 
 
-if __name__ == '__main__':
-    # E = EventsDB("192.168.99.100:27017")
-    #
-    # print(E.get_event("PCAP1"))
+class BuzzerTrackerDB:
+    def __init__(self, host):
+        self._client = MongoClient(host)
+        self.db = self._client['cyber_warrior']
+        self.collections = self.db['cw_buzzer_tracker']
 
+    def get_responses(self):
+        """
+        Returns a list of responses from the database.
+
+        :return:
+        """
+        _docs = self.collections.find({})
+
+        docs = []
+        for i in _docs:
+            docs.append(i)
+
+        return docs
+
+    def reset(self):
+        """
+        Clears all records from the database.
+
+        :return:
+        """
+        docs = self.get_responses()
+        if docs:
+            for doc in docs:
+                self.remove_response(doc['team_name'])
+            return True
+
+        return False
+
+    def buzzed(self, doc):
+        """
+        Takes the users buzzer submission, applies the time stamp and pushes to the datebase.
+
+        :param team_name:
+        :return:
+        """
+        if self.get_response(doc['team_name']):
+            self.remove_response(doc['team_name'])
+
+        timestamp = time.time()
+        _time = datetime.now()
+
+        doc['time_stamp'] = float(timestamp)
+        doc['time'] = str(_time)
+        doc['submitted'] = True
+
+        resp_example = {
+            "team_name": doc['team_name'],
+            "response": "",
+            "time_stamp": float(timestamp),
+            "time": str(_time),
+            "submitted": True
+        }
+
+        if self.add_response(doc):
+            return True
+        else:
+            return False
+
+    def get_positions(self):
+        """
+        Retrieves all responses and sorts them by the time stamp.
+
+        :return:
+        """
+
+        docs = self.get_responses()
+        result = sorted(docs, key=lambda i: i['time_stamp'])
+        from pprint import pprint
+        pprint(result)
+
+    def add_response(self, doc):
+        if not self.get_response(doc['team_name']):
+            self.collections.insert_one(doc)
+            return True
+
+        return False
+
+    def remove_response(self, team_name):
+        if self.get_response(team_name):
+            self.collections.find_one_and_delete({"team_name": team_name})
+            return True
+
+        return False
+
+    def get_response(self, team_name):
+        doc = self.collections.find_one({"team_name": team_name})
+        if doc:
+            return doc
+
+    def is_submitted(self, team_name):
+        doc = self.collections.find_one({"team_name": team_name})
+        if doc:
+            if doc['submitted']:
+                return True
+            return False
+
+        return False
+
+    def is_present(self, team_name):
+        if self.get_response(team_name):
+            return True
+        else:
+            return False
+
+
+def events_test():
+    e = EventsDB("192.168.99.100:27017")
+
+    print(e.get_game_list())
+
+
+def test_teams_class_2():
     t = TeamsDB("192.168.99.100:27017")
+    pprint(t.reset_all_responses())
 
+
+def test_teams_class():
+    t = TeamsDB("192.168.99.100:27017")
     t.reset_responses("team5")
+    print(t.remove_team("team1"))
+    print(t.remove_team("team2"))
+    print(t.remove_team("team3"))
+    print(t.remove_team("team4"))
+    print(t.remove_team("team5"))
+    print(t.add_team("team1", "team1"))
+    print(t.add_team("team2", "team2"))
+    print(t.add_team("team3", "team3"))
+    print(t.add_team("team4", "team4"))
+    print(t.add_team("team5", "team5"))
 
-    # print(t.remove_team("team1"))
-    # print(t.remove_team("team2"))
-    # print(t.remove_team("team3"))
-    # print(t.remove_team("team4"))
-    # print(t.remove_team("team5"))
-    # print(t.add_team("team1", "team1"))
-    # print(t.add_team("team2", "team2"))
-    # print(t.add_team("team3", "team3"))
-    # print(t.add_team("team4", "team4"))
-    # print(t.add_team("team5", "team5"))
+    print(t.reset_points("team1"))
 
-    # print(t.reset_points("team1"))
+    # Adding New Responses Test
+    resp_1 = t.make_response(event_id="PCAP1", q_id="PCAP1_1", response="", result="test")
+    resp_2 = t.make_response(event_id="PCAP1", q_id="PCAP1_2", response="", result="test")
+    resp_3 = t.make_response(event_id="PCAP1", q_id="PCAP1_3", response="", result="test")
+    resp_4 = t.make_response(event_id="PCAP1", q_id="PCAP1_4", response="", result="test")
+    print(t.add_responses("team1", [resp_1, resp_2, resp_3, resp_4]))
+    print(t.add_responses("team2", [resp_1, resp_2, resp_3, resp_4]))
+    print(t.add_responses("team3", [resp_1, resp_2, resp_3, resp_4]))
+    print(t.add_responses("team4", [resp_1, resp_2, resp_3, resp_4]))
+    print(t.add_responses("team5", [resp_1, resp_2, resp_3, resp_4]))
 
-    # # Adding New Responses Test
-    # resp_1 = t.make_response(event_id="PCAP1", q_id="PCAP1_1", response="", result="test")
-    # resp_2 = t.make_response(event_id="PCAP1", q_id="PCAP1_2", response="", result="test")
-    # resp_3 = t.make_response(event_id="PCAP1", q_id="PCAP1_3", response="", result="test")
-    # resp_4 = t.make_response(event_id="PCAP1", q_id="PCAP1_4", response="", result="test")
-    # print(t.add_responses("team1", [resp_1, resp_2, resp_3, resp_4]))
-    # print(t.add_responses("team2", [resp_1, resp_2, resp_3, resp_4]))
-    # print(t.add_responses("team3", [resp_1, resp_2, resp_3, resp_4]))
-    # print(t.add_responses("team4", [resp_1, resp_2, resp_3, resp_4]))
-    # print(t.add_responses("team5", [resp_1, resp_2, resp_3, resp_4]))
 
-    # print(t.get_team_doc("team1"))
-    # print(t.get_responses("team1"))
-    # res = t.collections.find({"responses": {"$elemMatch": {"q_id": "PCAP1_3"}}})
-    # for i in res:
-    #     print(i)
+def test_buzzer_class():
+    buzzer_db = BuzzerTrackerDB("192.168.99.100:27017")
+    # print(buzzer_db.is_submitted("team5"))
+    # print(buzzer_db.get_response("team5"))
+    # print(buzzer_db.get_responses())
+    team_names = ['team1', 'team2', 'team3', 'team4', 'team5']
+
+    # for team in team_names:
+    #     resp_example = {
+    #         "team_name": team,
+    #         "response": "",
+    #         "time_stamp": 0,
+    #         "submitted": True
+    #     }
+    #     print(buzzer_db.add_response(resp_example))
+    buzzer_db.buzzed("team2")
+    buzzer_db.buzzed("team1")
+
+    buzzer_db.buzzed("team3")
+    buzzer_db.buzzed("team4")
+    buzzer_db.buzzed("team5")
+
+    buzzer_db.get_positions()
+
+
+if __name__ == '__main__':
+    events_test()

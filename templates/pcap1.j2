@@ -25,17 +25,13 @@
             {% for question in questions %}
 
                 $('.QuestionBody').append('<label class="MontserratBlack" class="{{ question.q_id }}" for="{{ question.q_id }}">{{ question.text }}</label>\n' +
-                    '            <input class="form-control" id="{{ question.q_id }}" type="text"> ')
+                    '            <input placeholder="Cmon Think About It.." class="form-control" id="{{ question.q_id }}" type="text"> ')
 
             {% endfor %}
 
 
             {% for resp in event_responses %}
                 $('#{{ resp.q_id }}').val("{{ resp.response }}")
-
-
-
-                console.log($('#{{ resp.q_id }}'))
 
             {% endfor %}
 
@@ -48,8 +44,7 @@
                     var response = this.value;
                     var q_id = this.id;
                     var event_id = "{{event_data.event_id}}";
-                    console.log("{{event_data.event_id}}");
-                    console.log(q_id)
+
                     $.ajax({
                             url: '{{ url_for("validate_resp") }}',
                             data: {"response": response, "q_id": q_id, "event_id": event_id},

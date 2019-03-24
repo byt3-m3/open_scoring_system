@@ -2,12 +2,15 @@ import json
 
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
 
-from scorekeeper.db import TeamsDB, EventsDB
+from scorekeeper.db import TeamsDB, EventsDB, BuzzerTrackerDB
 from scorekeeper.forms import LoginForm
 
 # TODO: Establishes connection the  Monogo Databases
 team_db = TeamsDB("192.168.99.100:27017")
 event_db = EventsDB("192.168.99.100:27017")
+buzzer_db = BuzzerTrackerDB("192.168.99.100:27017")
+
+JSON_RESPONSE_HEADERS = {'content-type': 'application/json; charset=utf-8'}
 
 
 def validate_user(uname, password):
@@ -59,14 +62,29 @@ def home():
     # TODO: Extracts the session and team object from the request.
 
     team_doc = team_db.get_team_doc(session['username'])
+    sorted_docs = team_db.get_teams_positions()
 
-    return render_template("index.j2", team_data=team_doc)
+    new_docs = []
+    for indx, doc in enumerate(sorted_docs):
+        doc['index'] = indx + 1
+        new_docs.append(doc)
+
+
+
+    return render_template("index.j2", team_data=team_doc, sorted_docs=new_docs)
 
 
 @app.route('/')
 def index():
+    if session['username'] == "ringmaster":
+        return redirect(url_for("ringmaster"))
+        # print("RingMaster On")
+
+
     if g.user:
         return redirect(url_for("home"))
+
+
 
     return redirect(url_for('login'))
 
@@ -111,11 +129,9 @@ def pcap3():
                            event_responses=event_responses)
 
 
-
-
 @app.route("/opcyberjustice")
 def opcyberjustice():
-    team_obj = team_db.get_team_doc(session['username'])
+
     event_data = event_db.get_event("OCJ")
 
     event_responses = team_db.get_responses_by_event_id(session['username'], 'OCJ')
@@ -136,9 +152,19 @@ def buzzer():
 
     team_doc = team_db.get_team_doc(session['username'])
 
-
     return render_template("buzzer.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
                            event_responses=event_responses)
+
+
+@app.route('/ringmaster', methods=['GET'])
+def ringmaster():
+    team_doc = team_db.get_team_doc(session['username'])
+    games_list = event_db.get_game_list()
+
+    docs = team_db.get_all_docs()
+
+    return render_template("ringmaster.j2", team_data=team_doc, games_list=games_list, team_docs=docs)
+
 
 # Routes used for FrontEnd data calls
 @app.route("/getscore")
@@ -161,7 +187,7 @@ def validate_resp():
     This Endpoints preforms validation for the user input provided by the frontend.
     :return:
     """
-    JSON_RESPONSE_HEADERS = {'content-type': 'application/json; charset=utf-8'}
+
     data = request.form
 
     user_resp = data['response']
@@ -246,11 +272,52 @@ def reset_response():
     return Response
 
 
+@app.route('/buzzed', methods=['POST'])
+def buzzed():
+    data = request.form
+    team_name = session['username']
+    user_resp = data['user_resp']
+
+    resp_example = {
+        "team_name": team_name,
+        "response": user_resp,
+        "time_stamp": 0.0,
+        "time": "",
+        "submitted": False
+    }
+
+    result = buzzer_db.buzzed(resp_example)
+
+    return Response(json.dumps({"result": result}), status=200, headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route('/buzzer_clear', methods=['POST'])
+def buzzer_clear():
+    team_name = session['username']
+    if buzzer_db.remove_response(team_name):
+        return Response(json.dumps({"result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
+
+    return Response(json.dumps({"result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route('/buzzer_load', methods=['POST'])
+def buzzer_load():
+    team_name = session['username']
+    if buzzer_db.is_present(team_name):
+        doc = buzzer_db.get_response(team_name)
+        del doc['_id']
+        print(doc)
+        return Response(json.dumps({"doc": doc, "result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
+
+    return Response(json.dumps({"result": False, "doc": None}), status=200, headers=JSON_RESPONSE_HEADERS)
+
+
 @app.before_request
 def before_request():
     g.user = None
     if 'username' in session:
         g.user = session['username']
+
 
 
 if __name__ == '__main__':
