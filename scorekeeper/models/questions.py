@@ -1,61 +1,3 @@
-from couchdb import Server
-
-db_server = Server("http://192.168.99.100:5984")
-db_server.login("cyberadmin", "cyberadmin")
-
-event_db = db_server['cw_events']
-
-
-class Event:
-    def __init__(self, event_id):
-        self._event_id = event_id
-        self.facts = {}
-
-        self.questions = []
-        self.responses = []
-        self._get_event_facts()
-        self._make_questions()
-        self.question_count = len(self.questions)
-
-    def test_func(self, data):
-        return (data)
-
-    def get_question_by_qid(self, qid):
-
-        for i in self.questions:
-            if i.q_id == qid:
-                return i
-
-    @staticmethod
-    def get_event_by_event_id(event_id):
-        result = event_db.view("query/by_name", startkey=event_id, endkey=event_id, include_docs=True)
-        if len(result.rows) == 1:
-            data = result.rows.pop()
-            return data['doc']
-
-    def _make_questions(self):
-        questions = self._get_questions()
-        for question in questions:
-            q = Question()
-            q.q_id = question['q_id']
-            q.text = question['question']
-            q.answer = question['answer']
-
-            self.questions.append(q)
-
-    def _get_questions(self):
-        result = event_db.view("query/by_name", startkey=self._event_id, endkey=self._event_id, include_docs=True)
-        if len(result.rows) == 1:
-            data = result.rows.pop()
-            return data['doc']['questions']
-
-    def _get_event_facts(self):
-        result = event_db.view("query/by_name", startkey=self._event_id, endkey=self._event_id, include_docs=True)
-        if len(result.rows) == 1:
-            data = result.rows.pop()
-            self.facts = data['doc']
-
-
 class Question:
 
     def __init__(self, *args, **kwargs):
@@ -118,6 +60,3 @@ class Question:
 
     def __repr__(self):
         return f"<Question(question={self.text})>"
-
-
-

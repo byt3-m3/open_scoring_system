@@ -69,8 +69,6 @@ def home():
         doc['index'] = indx + 1
         new_docs.append(doc)
 
-
-
     return render_template("index.j2", team_data=team_doc, sorted_docs=new_docs)
 
 
@@ -80,12 +78,8 @@ def index():
         if session['username'] == "ringmaster":
             return redirect(url_for("ringmaster"))
 
-
-
     if g.user:
         return redirect(url_for("home"))
-
-
 
     return redirect(url_for('login'))
 
@@ -131,7 +125,6 @@ def pcap3():
 
 @app.route("/opcyberjustice")
 def opcyberjustice():
-
     event_data = event_db.get_event("OCJ")
 
     event_responses = team_db.get_responses_by_event_id(session['username'], 'OCJ')
@@ -311,12 +304,40 @@ def buzzer_load():
     return Response(json.dumps({"result": False, "doc": None}), status=200, headers=JSON_RESPONSE_HEADERS)
 
 
+@app.route("/register", methods=['POST'])
+def register():
+    """
+    Registers a new team to the database. Checks if the team is already present, will not over right if True.
+
+    :return:
+    """
+    data = request.json
+
+    name = data.get("name")
+    passwd = data.get("passwd")
+    if team_db.add_team(name, passwd):
+        return Response(json.dumps({"msg": f'User: "{name}" has been created', "result": True}), status=200,
+                        headers=JSON_RESPONSE_HEADERS)
+
+    else:
+        return Response(json.dumps({"msg": "User Already Present in Database", "result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
+
+@app.route("/unregister", methods=['POST'])
+def unregister():
+    data = request.json
+    name = data.get("name")
+    if team_db.remove_team(name):
+        return Response(json.dumps({"msg": f'User: "{name}" has been removed', "result": True}), status=200,
+                        headers=JSON_RESPONSE_HEADERS)
+    print(name)
+
+    return Response(json.dumps({"msg": "Nothing to remove", "result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
+
 @app.before_request
 def before_request():
     g.user = None
     if 'username' in session:
         g.user = session['username']
-
 
 
 if __name__ == '__main__':
