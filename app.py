@@ -94,7 +94,7 @@ def pcap1():
     event_data = event_db.get_event("PCAP1")
 
     event_responses = team_db.get_responses_by_event_id(session['username'], 'PCAP1')
-    print(event_responses)
+
     event_questions = event_db.get_event_questions("PCAP1")
 
     team_doc = team_db.get_team_doc(session['username'])
@@ -108,7 +108,6 @@ def pcap2():
     event_data = event_db.get_event("PCAP2")
 
     event_responses = team_db.get_responses_by_event_id(session['username'], 'PCAP2')
-    print(event_responses)
     event_questions = event_db.get_event_questions("PCAP2")
 
     team_doc = team_db.get_team_doc(session['username'])
@@ -135,7 +134,6 @@ def opcyberjustice():
     event_data = event_db.get_event("OCJ")
 
     event_responses = team_db.get_responses_by_event_id(session['username'], 'OCJ')
-    print(event_responses)
     event_questions = event_db.get_event_questions("OCJ")
 
     team_doc = team_db.get_team_doc(session['username'])

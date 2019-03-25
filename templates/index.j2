@@ -1,6 +1,7 @@
 {% extends 'base.j2' %}
 
 {% block  content %}
+        <meta http-equiv="refresh" content="45"/>
     <div class="container">
 
         <div class="row justify-content-center" style="margin-bottom: 20px">
@@ -39,22 +40,29 @@
 
     <script>
 
-    $('document').ready(function () {
 
-        {% for doc in sorted_docs %}
-            $('#TABLE_BODY').append("<tr>\n" +
-                "                        <th scope=\"row\">{{ doc.index }}</th>\n" +
-                "                        <td>{{ doc.name }}</td>\n" +
-                "                        <td>{{ doc.points }}</td>\n" +
-                "\n" +
-                "                    </tr>").addClass("MontserratThin")
+        $('document').ready(function () {
+            {#setInterval(get_docs, 1000);#}
+
+            function get_docs() {
+                {% for doc in sorted_docs %}
+                    $('#TABLE_BODY').append("<tr>\n" +
+                        "                        <th scope=\"row\">{{ doc.index }}</th>\n" +
+                        "                        <td>{{ doc.name }}</td>\n" +
+                        "                        <td>{{ doc.points }}</td>\n" +
+                        "\n" +
+                        "                    </tr>").addClass("MontserratThin")
 
 
-        {% endfor %}
+                {% endfor %}
+
+            }
+            get_docs(
+
+            )
 
 
-
-    })
+        })
 
     </script>
 
