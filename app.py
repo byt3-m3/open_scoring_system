@@ -250,11 +250,79 @@ def dropsession():
 
 
 @app.route('/rest_response')
-def reset_response():
+def rest_response():
     if team_db.reset_responses(session['username']):
         return Response
 
     return Response
+
+
+@app.route('/reset_response', methods=['POST'])
+def reset_response():
+    """
+    Resets the responses and clear the points for the provided name.
+
+    :return:
+    """
+    data = request.json
+
+    try:
+        name = data['name']
+        if team_db.reset_responses(name):
+            return Response(json.dumps({"msg": f'User: "{name}" responses have been cleared', "result": True}),
+                            status=STATUS_200_SUCCESS,
+                            headers=JSON_RESPONSE_HEADERS)
+        else:
+            return Response(json.dumps({"msg": f'User: "{name}" not found', "result": False}),
+                            status=STATUS_417_EXPECTATION_FAILED,
+                            headers=JSON_RESPONSE_HEADERS)
+
+    except Exception as err:
+        return Response(json.dumps({"msg": f'ERROR: {str(err)}', "result": False}),
+                        status=STATUS_400_BAD_REQUEST,
+                        headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route('/team_buzzed', methods=['POST'])
+def team_buzzed():
+    """
+    Creates buzzed record in the buzzer_tracker database. This function will timestamp each buzzed event.
+
+    :return:
+    """
+    data = request.json
+
+    try:
+
+        team_name = data['team_name']
+        user_resp = data['user_resp']
+
+        resp_example = {
+            "team_name": team_name,
+            "response": user_resp,
+            "time_stamp": 0.0,
+            "time": "",
+            "submitted": False
+        }
+        if not team_db.get_team_doc(team_name):
+            return Response(json.dumps({"msg": f'not a valid team', "result": False}),
+                            status=STATUS_400_BAD_REQUEST,
+                            headers=JSON_RESPONSE_HEADERS)
+
+        if buzzer_db.buzzed(resp_example):
+            return Response(json.dumps({"msg": f'User: "{team_name}" has been created', "result": True}),
+                            status=STATUS_201_CREATED,
+                            headers=JSON_RESPONSE_HEADERS)
+        else:
+            return Response(json.dumps({"msg": f'Unable process buzz', "result": False}),
+                            status=STATUS_417_EXPECTATION_FAILED,
+                            headers=JSON_RESPONSE_HEADERS)
+
+    except Exception as err:
+
+        return Response(json.dumps({"msg": f'ERROR: {str(err)}', "result": False}),
+                        status=STATUS_400_BAD_REQUEST,
+                        headers=JSON_RESPONSE_HEADERS)
 
 
 @app.route('/buzzed', methods=['POST'])
