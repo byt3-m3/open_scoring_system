@@ -3,10 +3,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import Regexp
 
-db_server = Server("http://192.168.99.100:5984")
-db_server.login("cyberadmin", "cyberadmin")
 
-PCAP_QUESTIONS = db_server['cw_pcap_questions']
+
+
 
 
 class LoginForm(FlaskForm):
