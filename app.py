@@ -2,6 +2,8 @@ import json
 
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
 
+from scorekeeper.const import JSON_RESPONSE_HEADERS, STATUS_201_CREATED, STATUS_417_EXPECTATION_FAILED, \
+    STATUS_200_SUCCESS
 from scorekeeper.db import TeamsDB, EventsDB, BuzzerTrackerDB
 from scorekeeper.forms import LoginForm
 
@@ -9,8 +11,6 @@ from scorekeeper.forms import LoginForm
 team_db = TeamsDB("192.168.99.100:27017")
 event_db = EventsDB("192.168.99.100:27017")
 buzzer_db = BuzzerTrackerDB("192.168.99.100:27017")
-
-JSON_RESPONSE_HEADERS = {'content-type': 'application/json; charset=utf-8'}
 
 
 def validate_user(uname, password):
@@ -323,11 +323,13 @@ def register():
     name = data.get("name")
     passwd = data.get("passwd")
     if team_db.add_team(name, passwd):
-        return Response(json.dumps({"msg": f'User: "{name}" has been created', "result": True}), status=200,
+        return Response(json.dumps({"msg": f'User: "{name}" has been created', "result": True}),
+                        status=STATUS_201_CREATED,
                         headers=JSON_RESPONSE_HEADERS)
 
     else:
-        return Response(json.dumps({"msg": "User Already Present in Database", "result": False}), status=200,
+        return Response(json.dumps({"msg": "User Already Present in Database", "result": False}),
+                        status=STATUS_417_EXPECTATION_FAILED,
                         headers=JSON_RESPONSE_HEADERS)
 
 
@@ -336,11 +338,11 @@ def unregister():
     data = request.json
     name = data.get("name")
     if team_db.remove_team(name):
-        return Response(json.dumps({"msg": f'User: "{name}" has been removed', "result": True}), status=200,
+        return Response(json.dumps({"msg": f'User: "{name}" has been removed', "result": True}),
+                        status=STATUS_200_SUCCESS,
                         headers=JSON_RESPONSE_HEADERS)
-    print(name)
 
-    return Response(json.dumps({"msg": "Nothing to remove", "result": False}), status=200,
+    return Response(json.dumps({"msg": "Nothing to remove", "result": False}), status=STATUS_417_EXPECTATION_FAILED,
                     headers=JSON_RESPONSE_HEADERS)
 
 
@@ -355,12 +357,12 @@ def new_event():
 
     if event_db.add_event(doc=data):
         return Response(json.dumps({"msg": f'Event: "{data.get("event_id")}" has been created', "result": True}),
-                        status=200,
+                        status=STATUS_201_CREATED,
                         headers=JSON_RESPONSE_HEADERS)
     else:
         return Response(json.dumps({"msg": f'Event: "{data.get("event_id")}" Already Exist', "result": False}),
-                        status=200,
-                        headers=JSON_RESPONSE_HEADERS)
+                        status=417,
+                        headers=STATUS_417_EXPECTATION_FAILED)
 
 
 @app.route("/new_event_questions", methods=['POST'])
@@ -374,13 +376,33 @@ def new_event_questions():
 
     if event_db.add_event_questions(data):
         return Response(json.dumps({"msg": f'Question for: "{data.get("event_id")}" has been added', "result": True}),
-                        status=200,
+                        status=STATUS_201_CREATED,
                         headers=JSON_RESPONSE_HEADERS)
 
     return Response(json.dumps(
         {"msg": f'Unable to add question for: "{data.get("event_id")}", possible duplicate q_id in database',
-         "result": False}), status=200,
+         "result": False}), status=STATUS_417_EXPECTATION_FAILED,
         headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route("/remove_event_questions", methods=['POST'])
+def remove_event_questions():
+    """
+    Removes a list of questions from an event.
+
+    :return:
+    """
+    data = request.json
+
+    if event_db.remove_event_questions(data):
+        return Response(
+            json.dumps({"msg": f'Questions for: "{data.get("event_id")}" has been removed', "result": True}),
+            status=STATUS_200_SUCCESS,
+            headers=JSON_RESPONSE_HEADERS)
+    else:
+        return Response(json.dumps({"msg": f'Error removing Questions for: "{data.get("event_id")}"', "result": False}),
+                        status=STATUS_417_EXPECTATION_FAILED,
+                        headers=JSON_RESPONSE_HEADERS)
 
 
 @app.route("/remove_event", methods=['POST'])
@@ -393,10 +415,10 @@ def remove_event():
     data = request.json
     if event_db.remove_event(data.get("event_id")):
         return Response(json.dumps({"msg": f'Event: "{data.get("event_id")}" has been removed', "result": True}),
-                        status=200,
+                        status=STATUS_200_SUCCESS,
                         headers=JSON_RESPONSE_HEADERS)
     else:
-        return Response(json.dumps({"msg": f'Nothing to remove', "result": True}), status=200,
+        return Response(json.dumps({"msg": f'Nothing to remove', "result": True}), status=STATUS_417_EXPECTATION_FAILED,
                         headers=JSON_RESPONSE_HEADERS)
 
 

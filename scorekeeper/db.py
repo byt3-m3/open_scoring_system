@@ -124,7 +124,7 @@ class EventsDB:
         if self.get_event(doc.get("event_id")):
             _doc = self.get_event(doc.get("event_id"))
 
-            for i,q in enumerate(doc['questions']):
+            for i, q in enumerate(doc['questions']):
                 if self.get_question(doc.get("event_id"), q['q_id']):
                     doc['questions'].pop(i)
 
@@ -136,11 +136,32 @@ class EventsDB:
 
             self.collections.update_one({"event_id": doc.get("event_id")}, {"$set": _doc})
             return True
-
-
-
         else:
             return False
+
+    def remove_event_questions(self, doc):
+        if self.get_event(doc.get("event_id")):
+            q_ids = doc.get("q_ids")
+            event_id = doc.get("event_id")
+
+            _doc = self.get_event(event_id)
+
+            for i, q_id in enumerate(q_ids):
+                if not self.get_question(event_id, q_id):
+                    q_ids.pop(i)
+
+            if len(q_ids) == 0:
+                return False
+
+            for i, question in enumerate(_doc.get("questions")):
+                if question.get("q_id") in q_ids:
+                    _doc['questions'].pop(i)
+
+            self.collections.update_one({"event_id": doc.get("event_id")}, {"$set": _doc})
+            return True
+        else:
+            return False
+
 
 class TeamsDB:
 
