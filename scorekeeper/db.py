@@ -90,11 +90,57 @@ class EventsDB:
 
         return doc['artifacts']['events']
 
+    def remove_event(self, event_id):
+        if self.get_event(event_id):
+            self.collections.delete_one({"event_id": event_id})
+            return True
+        else:
+            return False
+
+    def add_event(self, doc):
+        if self.get_event(doc.get("event_id")):
+            return False
+        else:
+            self.collections.insert_one(doc)
+            return True
+
     def get_event(self, event_id):
         result = self.collections.find_one({"event_id": event_id})
-        return result
-        # print(result['questions'])
+        if result:
+            return result
+        else:
+            return
 
+    def get_question(self, event_id, q_id):
+        doc = self.collections.find_one({"event_id": event_id})
+        if doc:
+            for question in doc['questions']:
+                if question['q_id'] == q_id:
+                    return question
+        else:
+            return
+
+    def add_event_questions(self, doc):
+        if self.get_event(doc.get("event_id")):
+            _doc = self.get_event(doc.get("event_id"))
+
+            for i,q in enumerate(doc['questions']):
+                if self.get_question(doc.get("event_id"), q['q_id']):
+                    doc['questions'].pop(i)
+
+            if len(doc['questions']) == 0:
+                return False
+
+            for q in doc['questions']:
+                _doc['questions'].append(q)
+
+            self.collections.update_one({"event_id": doc.get("event_id")}, {"$set": _doc})
+            return True
+
+
+
+        else:
+            return False
 
 class TeamsDB:
 

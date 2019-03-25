@@ -158,6 +158,13 @@ def ringmaster():
     return render_template("ringmaster.j2", team_data=team_doc, games_list=games_list, team_docs=docs)
 
 
+@app.before_request
+def before_request():
+    g.user = None
+    if 'username' in session:
+        g.user = session['username']
+
+
 # Routes used for FrontEnd data calls
 @app.route("/getscore")
 def getscore():
@@ -320,7 +327,9 @@ def register():
                         headers=JSON_RESPONSE_HEADERS)
 
     else:
-        return Response(json.dumps({"msg": "User Already Present in Database", "result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
+        return Response(json.dumps({"msg": "User Already Present in Database", "result": False}), status=200,
+                        headers=JSON_RESPONSE_HEADERS)
+
 
 @app.route("/unregister", methods=['POST'])
 def unregister():
@@ -331,13 +340,64 @@ def unregister():
                         headers=JSON_RESPONSE_HEADERS)
     print(name)
 
-    return Response(json.dumps({"msg": "Nothing to remove", "result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
+    return Response(json.dumps({"msg": "Nothing to remove", "result": False}), status=200,
+                    headers=JSON_RESPONSE_HEADERS)
 
-@app.before_request
-def before_request():
-    g.user = None
-    if 'username' in session:
-        g.user = session['username']
+
+@app.route("/new_event", methods=['POST'])
+def new_event():
+    """
+    Adds a new event to the database.
+
+    :return:
+    """
+    data = request.json
+
+    if event_db.add_event(doc=data):
+        return Response(json.dumps({"msg": f'Event: "{data.get("event_id")}" has been created', "result": True}),
+                        status=200,
+                        headers=JSON_RESPONSE_HEADERS)
+    else:
+        return Response(json.dumps({"msg": f'Event: "{data.get("event_id")}" Already Exist', "result": False}),
+                        status=200,
+                        headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route("/new_event_questions", methods=['POST'])
+def new_event_questions():
+    """
+    Adds new questions to the supplied event ID.
+
+    :return:
+    """
+    data = request.json
+
+    if event_db.add_event_questions(data):
+        return Response(json.dumps({"msg": f'Question for: "{data.get("event_id")}" has been added', "result": True}),
+                        status=200,
+                        headers=JSON_RESPONSE_HEADERS)
+
+    return Response(json.dumps(
+        {"msg": f'Unable to add question for: "{data.get("event_id")}", possible duplicate q_id in database',
+         "result": False}), status=200,
+        headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route("/remove_event", methods=['POST'])
+def remove_event():
+    """
+    Removes an event from the database.
+
+    :return:
+    """
+    data = request.json
+    if event_db.remove_event(data.get("event_id")):
+        return Response(json.dumps({"msg": f'Event: "{data.get("event_id")}" has been removed', "result": True}),
+                        status=200,
+                        headers=JSON_RESPONSE_HEADERS)
+    else:
+        return Response(json.dumps({"msg": f'Nothing to remove', "result": True}), status=200,
+                        headers=JSON_RESPONSE_HEADERS)
 
 
 if __name__ == '__main__':
