@@ -76,9 +76,10 @@ def home():
 
 @app.route('/')
 def index():
-    if session['username'] == "ringmaster":
-        return redirect(url_for("ringmaster"))
-        # print("RingMaster On")
+    if session.get("username"):
+        if session['username'] == "ringmaster":
+            return redirect(url_for("ringmaster"))
+
 
 
     if g.user:
