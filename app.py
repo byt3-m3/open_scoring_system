@@ -3,7 +3,7 @@ import json
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
 
 from scorekeeper.const import JSON_RESPONSE_HEADERS, STATUS_201_CREATED, STATUS_417_EXPECTATION_FAILED, \
-    STATUS_200_SUCCESS
+    STATUS_200_SUCCESS, STATUS_400_BAD_REQUEST
 from scorekeeper.db import TeamsDB, EventsDB, BuzzerTrackerDB
 from scorekeeper.forms import LoginForm
 
@@ -166,91 +166,77 @@ def before_request():
 
 
 # Routes used for FrontEnd data calls
-@app.route("/getscore")
-def getscore():
+@app.route("/getteamscore", methods=['POST'])
+def getteamscore():
     """
-    Gets the users scores from the database.
+    Gets the current score for the specified team
 
-    :return str: string representation of the front end.
+    :return
     """
-    JSON_RESPONSE_HEADERS = {'content-type': 'application/json; charset=utf-8'}
+    data = request.json
 
-    points = team_db.get_points(session['username'])
-    # return Response()
-    return Response(str(points))
+    if isinstance(team_db.get_points(data.get('name')), int):
+        points = team_db.get_points(data.get('name'))
+
+        return Response(json.dumps({"name": data.get("name"), "points": points}),
+                        status=STATUS_200_SUCCESS,
+                        headers=JSON_RESPONSE_HEADERS)
+
+    return Response(json.dumps({"name": data.get("name"), "msg": f"Error finding team"}),
+                    status=STATUS_400_BAD_REQUEST,
+                    headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route("/validate_resp", methods=['POST', 'GET'])
-def validate_resp():
-    """
-    This Endpoints preforms validation for the user input provided by the frontend.
-    :return:
-    """
+@app.route("/validate", methods=['POST'])
+def validate():
+    data = request.json
+    response = data.get("response")
+    name = data.get("name")
+    q_id = data.get("q_id")
+    event_id = data.get("event_id")
 
-    data = request.form
+    if not team_db.get_team_doc(name):
+        return Response(json.dumps({"result": False, "msg": "Invalid Team Name"}),
+                        status=STATUS_400_BAD_REQUEST,
+                        headers=JSON_RESPONSE_HEADERS)
 
-    user_resp = data['response']
-    event_id = data['event_id']
-    q_id = data['q_id']
+    question = event_db.get_question(event_id, q_id)
+    if question:
+        if question.get("answer"):
+            if question.get("answer") == response:
 
-    questions = event_db.get_event_questions(event_id)
-    team_obj = team_db.get_team_doc(session['username'])
+                cached_resp = team_db.get_response_by_event_id(name, event_id, q_id)
 
-    for question in questions:
+                if cached_resp:
+                    if cached_resp['points_awarded']:
+                        return Response(json.dumps({"result": True, "msg": "Points Already Awarded"}),
+                                        status=STATUS_200_SUCCESS,
+                                        headers=JSON_RESPONSE_HEADERS)
 
-        if question.validate(user_resp):
+                team_obj = team_db.get_team_doc(name)
 
-            if question.q_id == q_id:
+                new_response = {
+                    "event_id": event_id,
+                    "q_id": q_id,
+                    "response": response,
+                    "points_awarded": True
+                }
 
-                single_resp = team_db.get_response_by_event_id(session['username'], event_id, q_id)
-                print(single_resp)
-                # Triggers if the q_id is already present in the response list
-                if single_resp:
-                    if single_resp['q_id'] == q_id:
+                team_obj['responses'].append(new_response)
+                team_obj['points'] += int(question['point_value'])
+                team_db.update_data(name, team_obj)
 
-                        if single_resp['points_awarded']:
+                return Response(json.dumps({"result": True, "msg": "Correct"}),
+                                status=STATUS_200_SUCCESS,
+                                headers=JSON_RESPONSE_HEADERS)
+            else:
+                return Response(json.dumps({"result": False, "msg": "Incorrect"}),
+                                status=STATUS_200_SUCCESS,
+                                headers=JSON_RESPONSE_HEADERS)
 
-                            return Response(json.dumps({"result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
-
-                        else:
-                            single_resp['response'] = user_resp
-                            team_obj['points'] += int(question.point_value)
-                            # team_db.incr_points(session['username'], int(question.point_value))
-                            single_resp['points_awarded'] = True
-                            team_db.update_data(session['username'], team_obj)
-                            del team_obj
-                            return Response(json.dumps({"result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
-                    else:
-
-                        new_response = {
-                            "event_id": event_id,
-                            "q_id": q_id,
-                            "response": user_resp,
-                            "points_awarded": True
-                        }
-                        team_obj['points'] += int(question.point_value)
-                        team_obj['responses'].append(new_response)
-
-                        team_db.update_data(session['username'], team_obj)
-                        del team_obj
-                        return Response(json.dumps({"result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
-                else:
-                    new_response = {
-                        "event_id": event_id,
-                        "q_id": q_id,
-                        "response": user_resp,
-                        "points_awarded": True
-                    }
-                    team_obj['points'] += int(question.point_value)
-                    team_obj['responses'].append(new_response)
-                    print("Bad Hit")
-
-                    team_db.update_data(session['username'], team_obj)
-                    del team_obj
-                    return Response(json.dumps({"result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
-                    print("Bad sssHit")
-
-    return Response(json.dumps({"result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
+    return Response(json.dumps({"result": False, "msg": "Event not Found"}),
+                    status=STATUS_417_EXPECTATION_FAILED,
+                    headers=JSON_RESPONSE_HEADERS)
 
 
 @app.route('/dropsession')

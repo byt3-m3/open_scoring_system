@@ -18,25 +18,9 @@
     </div>
 
     <script>
+    function validateResp(){
 
-
-        $(document).ready(function () {
-            // Generates questions from the database on the WebSite
-            {% for question in questions %}
-
-                $('.QuestionBody').append('<label class="MontserratBlack" class="{{ question.q_id }}" for="{{ question.q_id }}">{{ question.text }}</label>\n' +
-                    '            <input placeholder="Cmon Think About It.." class="form-control" id="{{ question.q_id }}" type="text"> ')
-
-            {% endfor %}
-
-
-            {% for resp in event_responses %}
-                $('#{{ resp.q_id }}').val("{{ resp.response }}")
-
-            {% endfor %}
-
-
-            $("input").blur(function () {
+        $("input").blur(function () {
                 // Will check if the correct answer is supplied, if not the label turns red, if correct the label turns green
                 var myElement = this
 
@@ -44,11 +28,13 @@
                     var response = this.value;
                     var q_id = this.id;
                     var event_id = "{{event_data.event_id}}";
+                    var name = "{{team_data.name}}";
 
                     $.ajax({
-                            url: '{{ url_for("validate_resp") }}',
-                            data: {"response": response, "q_id": q_id, "event_id": event_id},
+                            url: '{{ url_for("validate") }}',
+                            data: JSON.stringify({"response": response, "q_id": q_id, "event_id": event_id, "name": name}),
                             method: 'POST',
+                            contentType: "application/json",
                             statusCode: {
                                 200: function (response) {
                                     if (response.result === false) {
@@ -58,10 +44,7 @@
                                     } else {
 
                                         $(`label[for=${q_id}]`).css({color: "green"})
-                                        $.get("http://127.0.0.1:5000/getscore", function (data) {
-                                            // jQuery used to update the score
-                                            $("#TeamScore").html(data)
-                                        })
+                                        updateScore()
                                     }
 
 
@@ -78,6 +61,35 @@
 
 
             })
+
+
+    }
+
+
+    </script>
+
+    <script>
+
+
+        $(document).ready(function () {
+
+
+            // Generates questions from the database on the WebSite
+            {% for question in questions %}
+
+                $('.QuestionBody').append('<label class="MontserratBlack" class="{{ question.q_id }}" for="{{ question.q_id }}">{{ question.text }}</label>\n' +
+                    '            <input placeholder="Cmon Think About It.." class="form-control" id="{{ question.q_id }}" type="text"> ')
+
+            {% endfor %}
+
+
+            {% for resp in event_responses %}
+                $('#{{ resp.q_id }}').val("{{ resp.response }}")
+
+            {% endfor %}
+
+            validateResp()
+
         })
 
     </script>

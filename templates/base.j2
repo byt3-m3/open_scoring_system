@@ -25,10 +25,8 @@
         </div>
 
 
-
     </div>
     <div class="row justify-content-center">
-
 
 
         <div class="col-6 col-sm-6" style="margin-top: 30px">
@@ -86,15 +84,29 @@
 
 <script>
 
+    function updateScore(){
+        var user = "{{ team_data.name }}"
+
+        $.ajax({
+            "url": "{{ url_for("getteamscore") }}",
+            data: JSON.stringify({"name": user}),
+            contentType: 'application/json',
+            method: 'POST',
+            statusCode: {
+                200: function (response) {
+                    $("#TeamScore").html(response.points)
+
+
+                }
+            }
+        })
+    }
+
+
     $(document).ready(function () {
 
-        $.get("{{ url_for("getscore") }}", function (data) {
-            // jQuery used to update the score
-            $("#TeamScore").html(data)
-        })
+        updateScore()
 
-
-        // jQuery methods go here...
 
     });
 </script>

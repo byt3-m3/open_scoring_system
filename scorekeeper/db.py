@@ -174,8 +174,11 @@ class TeamsDB:
         self.collections.update_one({"name": team_name}, {"$set": doc})
 
     def get_points(self, name):
-        doc = self.get_team_doc(name)
-        return doc['points']
+        if self.get_team_doc(name):
+            doc = self.get_team_doc(name)
+            return doc['points']
+        else:
+            return
 
     def get_teams_positions(self):
         docs = self.get_all_docs()
@@ -200,8 +203,9 @@ class TeamsDB:
         pass
 
     def get_team_doc(self, name):
-        for doc in self.collections.find({"name": name}):
-            return (doc)
+        doc = self.collections.find_one({"name": name})
+        if doc:
+            return doc
 
     def add_responses(self, name, responses):
         doc = self.get_team_doc(name)
@@ -213,6 +217,9 @@ class TeamsDB:
 
     def get_responses(self, name):
         doc = self.get_team_doc(name)
+        if not doc:
+            return []
+
         if doc.get("responses"):
             return doc['responses']
         else:
@@ -220,6 +227,9 @@ class TeamsDB:
 
     def get_responses_by_event_id(self, team_name, event_id):
         doc = self.get_team_doc(team_name)
+        if not doc:
+            return []
+
         if doc.get("responses"):
             event_responses = []
             for response in doc.get("responses"):
