@@ -1,0 +1,67 @@
+{% extends 'base.j2' %}
+
+{% block  content %}
+
+    <div class="container">
+
+
+        <div class="row justify-content-center">
+
+
+            <div class="col">
+                <div class="h1">PCAP Overview</div>
+                <br>
+                <article class="help_font">
+                    Todays post will go over some basic features of wireshark. We will cover how to view how many
+                    conversations are present, apply wireshark filters, rebuild tcp streams, and search for data in the
+                    packets..
+
+                    Firstly let's discuss reviewing how many conversations are present in the pcap file. This window is
+                    a
+                    great
+                    way to determine how much chatter is actually occuring within the PCAP file.
+                </article>
+                <hr>
+                <p style="margin-top: 50px" class="h3 help_font help_headings">Viewing Conversations:</p>
+                <img  class="img-fluid help_images" src="../static/img/Conversation_step1.jpg" alt="Conversation Step 1">
+                <hr>
+                <p style="margin-top: 50px" class="h3 help_font help_headings">Finding data in conversations</p>
+                <img class="img-fluid help_images" src="../static/img/Conversation_step2.jpg" alt="">
+                <hr>
+                <article class="help_font">
+
+                    let's discuss applying filters. Filters are useful when you would like to analyze information
+                    unique to a single or set of packets contained inside the pcap file. Filters can be complex or as
+                    simple
+                    as just typing protocol names such as “dns”. As you can see in the screenshot below, the red area is
+                    to
+                    be used for any filters of interest
+                </article>
+                <p style="margin-top: 50px" class="h3 help_font help_headings">Applying Filters:</p>
+                <img class="img-fluid" src="../static/img/Apply%20Filter.jpg" alt="">
+                <hr>
+                <article class="help_font">
+                    Now Let's discuss rebuilding tcp streams. Rebuilding TCP streams is a pretty straight forward
+                    process, this will rebuilding the entire conversation from the TCP 3-way handshake to the
+                    termination of the conversation. Below demonstrates how to accomplish this task. Right click to get
+                    the menu below to appear.
+                </article>
+                <p style="margin-top: 50px" class="h3 help_font help_headings">Following TCP Stream:</p>
+                <img class="img-fluid help_images" src="../static/img/TCP%20stream%20follow.jpg" alt="">
+                <hr>
+                <article class="help_font">
+                    Below is an example of what the rebuilt stream looks like. By using the “Find:” bar, you can look
+                    for specific information located within the rebuilt conversation.
+                </article>
+                <p style="margin-top: 50px" class="h3 help_font help_headings">Searching the TCP stream:</p>
+                <img class="img-fluid help_images" src="../static/img/TCP%20stream%20find.jpg" alt="">
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+{% endblock %}

@@ -148,6 +148,14 @@ def buzzer():
                            event_responses=event_responses)
 
 
+@app.route('/pcapoverview', methods=['GET'])
+def pcapoverview():
+    team_doc = team_db.get_team_doc(session['username'])
+
+    return render_template("pcapoverview.j2", team_data=team_doc)
+    pass
+
+
 @app.route('/ringmaster', methods=['GET'])
 def ringmaster():
     team_doc = team_db.get_team_doc(session['username'])
@@ -158,6 +166,11 @@ def ringmaster():
     return render_template("ringmaster.j2", team_data=team_doc, games_list=games_list, team_docs=docs)
 
 
+@app.route('/instructions')
+def instructions():
+    team_doc = team_db.get_team_doc(session['username'])
+    return render_template("instructions.j2", team_data=team_doc)
+
 @app.before_request
 def before_request():
     g.user = None
@@ -165,7 +178,7 @@ def before_request():
         g.user = session['username']
 
 
-# Routes used for FrontEnd data calls
+### Routes used for FrontEnd data calls ###
 @app.route("/getteamscore", methods=['POST'])
 def getteamscore():
     """
@@ -249,6 +262,7 @@ def dropsession():
     return redirect(url_for("login"))
 
 
+# Marked for removal after javascript refactoring
 @app.route('/rest_response')
 def rest_response():
     if team_db.reset_responses(session['username']):
@@ -325,6 +339,7 @@ def team_buzzed():
                         headers=JSON_RESPONSE_HEADERS)
 
 
+# Marked for removal after javascript refactoring
 @app.route('/buzzed', methods=['POST'])
 def buzzed():
     data = request.form
@@ -344,6 +359,33 @@ def buzzed():
     return Response(json.dumps({"result": result}), status=200, headers=JSON_RESPONSE_HEADERS)
 
 
+@app.route('/clear_buzz', methods=['POST'])
+def clear_buzz():
+    """
+    Clears the buzz entry from the buzz tracker database.
+
+    :return:
+    """
+    data = request.json
+
+    try:
+        name = data['name']
+        if buzzer_db.remove_response(name):
+            return Response(json.dumps({"msg": f'User: "{name}" buzzes cleared', "result": True}),
+                            status=STATUS_200_SUCCESS,
+                            headers=JSON_RESPONSE_HEADERS)
+        else:
+            return Response(json.dumps({"msg": f'Unable to clear buzz', "result": False}),
+                            status=STATUS_417_EXPECTATION_FAILED,
+                            headers=JSON_RESPONSE_HEADERS)
+
+    except Exception as err:
+        return Response(json.dumps({"msg": f'ERROR: {str(err)}', "result": False}),
+                        status=STATUS_400_BAD_REQUEST,
+                        headers=JSON_RESPONSE_HEADERS)
+
+
+# Marked for removal after javascript refactoring
 @app.route('/buzzer_clear', methods=['POST'])
 def buzzer_clear():
     team_name = session['username']
@@ -353,6 +395,7 @@ def buzzer_clear():
     return Response(json.dumps({"result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
 
 
+# Marked for removal after javascript refactoring
 @app.route('/buzzer_load', methods=['POST'])
 def buzzer_load():
     team_name = session['username']
@@ -363,6 +406,30 @@ def buzzer_load():
         return Response(json.dumps({"doc": doc, "result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
 
     return Response(json.dumps({"result": False, "doc": None}), status=200, headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route('/onload_buzz_check', methods=['POST'])
+def onload_buzz_check():
+    try:
+        data = request.json
+        team_name = data['team_name']
+
+        if buzzer_db.is_present(team_name):
+            doc = buzzer_db.get_response(team_name)
+            del doc['_id']
+            return Response(json.dumps({"doc": doc, "result": True}),
+                            status=STATUS_200_SUCCESS,
+                            headers=JSON_RESPONSE_HEADERS)
+        else:
+            return Response(json.dumps({"doc": None, "result": False, "msg": f'{team_name} not found'}),
+                            status=STATUS_417_EXPECTATION_FAILED,
+                            headers=JSON_RESPONSE_HEADERS)
+
+    except Exception as err:
+        return Response(
+            json.dumps({"doc": None, "err": str(err), "result": False, "msg": "unable to load user record"}),
+            status=STATUS_400_BAD_REQUEST,
+            headers=JSON_RESPONSE_HEADERS)
 
 
 @app.route("/register", methods=['POST'])
@@ -457,6 +524,27 @@ def remove_event_questions():
         return Response(json.dumps({"msg": f'Error removing Questions for: "{data.get("event_id")}"', "result": False}),
                         status=STATUS_417_EXPECTATION_FAILED,
                         headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route("/leaderboard", methods=['GET'])
+def leaderboard():
+    """
+    Retrieves the current team standings of the game.
+
+    :return:
+    """
+
+    sorted_docs = team_db.get_teams_positions()
+
+    new_docs = []
+    for indx, doc in enumerate(sorted_docs):
+        doc['index'] = indx + 1
+        new_docs.append(doc)
+
+    return Response(
+        json.dumps({"msg": f'Successful', "data": new_docs}),
+        status=STATUS_200_SUCCESS,
+        headers=JSON_RESPONSE_HEADERS)
 
 
 @app.route("/remove_event", methods=['POST'])

@@ -1,38 +1,33 @@
 {% extends 'base.j2' %}
 
 {% block  content %}
-        <meta http-equiv="refresh" content="45"/>
+
+
+
+    <script src="../static/js/jquery.tablesorter.combined.js"></script>
+    <link rel="stylesheet" href="../static/css/theme.blue.css">
+    <link rel="stylesheet" href="../static/css/theme.bootstrap.min.css">
+
     <div class="container">
 
-        <div class="row justify-content-center" style="margin-bottom: 20px">
-            <div class="h1 MontserratBlack MainFontColor">Leader Board</div>
-        </div>
-
-        <div class="row justify-content-center">
+        <div class="row text-center">
+            <div class="col">
+                <img src="../static/img/usarcent_logo.png" alt="">
+            </div>
 
             <div class="col">
+                <div class="h1 MontserratBlack MainFontColor">Leader Board</div>
+                
+                <ol class="list-group list-group-flush" id="TEAM_LIST" style="font-size: 24px">
 
-                <table class="table justify-content-center">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Position</th>
-                        <th scope="col">Team Name</th>
-                        <th scope="col">Point Total</th>
-
-                    </tr>
-                    </thead>
-                    <tbody id="TABLE_BODY">
-
-                    </tbody>
-                </table>
-
+                </ol>
 
             </div>
 
+            <div class="col">
+                 <img src="../static/img/usarcent_logo.png" alt="">
+            </div>
 
-            <br>
-            <br>
-            <br>
 
         </div>
 
@@ -41,27 +36,41 @@
     <script>
 
 
+        function makeLeaderboard() {
+            $.ajax({
+                "url": "{{ url_for("leaderboard") }}",
+                data: {},
+                method: 'GET',
+                statusCode: {
+                    200: function (response) {
+                        let teams = response.data;
+
+                        $('#TEAM_LIST').empty()
+
+                        teams.forEach(function (element) {
+
+
+                            $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.name.toUpperCase()} - ${element.points} pts</li>`);
+
+                        })
+
+                    },
+
+                    400: function (response) {
+
+                    },
+
+                    404: function (response) {
+
+                    }
+                }
+            })
+        }
+
+
         $('document').ready(function () {
-            {#setInterval(get_docs, 1000);#}
-
-            function get_docs() {
-                {% for doc in sorted_docs %}
-                    $('#TABLE_BODY').append("<tr>\n" +
-                        "                        <th scope=\"row\">{{ doc.index }}</th>\n" +
-                        "                        <td>{{ doc.name }}</td>\n" +
-                        "                        <td>{{ doc.points }}</td>\n" +
-                        "\n" +
-                        "                    </tr>").addClass("MontserratThin")
-
-
-                {% endfor %}
-
-            }
-            get_docs(
-
-            )
-
-
+            makeLeaderboard()
+            setInterval(makeLeaderboard, 5000);
         })
 
     </script>

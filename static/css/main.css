@@ -1,4 +1,21 @@
 
+.help_images {
+    height: 630px;
+    widthi: 807px;
+}
+
+.help_font {
+    font-size: 20px;
+    font-family: Montserrat;
+}
+
+.help_headings {
+    font-weight: bold;
+}
+
+#HEADER {
+  position: fixed;
+}
 
 .MainFontColor {
     color: #761037
