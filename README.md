@@ -1,4 +1,4 @@
-# CyberWarrior Scoring System 
+# Customer Scoring System 
 
 This WebApp was created to serve as a method of tracking team progress throughout the BestCyberWarrior event. 
 
@@ -13,15 +13,27 @@ For this app there are some important endpoints to discuss. the ends points can 
 that can be crucial for 
 
 ## Key Features
-- Instant Validation
+- Response validation function 
 - Position Tracking 
 - Custom Game Entries 
 - Live Leaderboard 
 
 ## Endpoints
-- /getscore - Gets the score of the the provided team. 
-- /validate_resp - validates the question field of the provide user team
-- /buzzed - Represents a user using the buzzing feature 
+- /register['POST'] - Registers a new team to the database. 
+- /unregister['POST']  - unRegisters a team in the database.
+- /getteamscore['POST']  - Gets the current score for the specified team
+- /reset_response['POST']  - Resets the responses and clear the points for the name provided 
+- /validate['POST']  - Validates the user input for the question located in the events database 
+- /team_buzzed['POST']  - Creates buzzed record in the buzzer_tracker database. This function will timestamp each buzzed event.
+- /clear_buzz['POST']  - Clears the buzz entry from the buzz tracker database.
+- /onload_buzz_check['POST']  - Frontend function used to load the buzzer database onpage load.
+- /new_event['POST']  - Adds a new event to the database.
+- /new_event_question['POST']  - Adds new questions to the supplied event ID.
+- /remove_event_question['POST']  - Removes a list of questions from an event.
+- /remove_event['POST']  - Removes an event from the database.
+- /leaderboard['GET']  - Retrieves the current team standings of the game.
+
+
 
 ## Data Models
 
@@ -29,17 +41,9 @@ that can be crucial for
 #### Team Model
 ```json
 {
-    "name" : "team1",
-    "passwd" : "team1",
-    "responses" : [
-        {
-            "event_id" : "",
-            "q_id" : "",
-            "response" : "",
-            "points_awarded" : false,
-            "point_value": 0
-        }
-    ],
+    "name" : "",
+    "passwd" : "",
+    "responses" : [],
     "points" : 0
 }
 ```
@@ -47,15 +51,11 @@ that can be crucial for
 #### Buzzer Model
 ```json
 {
-  "event_id": "",
-  "team_responses": [
-    {
-      "team_name": "",
-      "response": "",
-      "time_stamp": 0,
-      "submitted": false
-    }
-  ]
+    "team_name" : "",
+    "response" : "",
+    "time_stamp" : 1553420336.01914,
+    "time" : "",
+    "submitted" : true
 }
 ```
 
@@ -63,18 +63,9 @@ that can be crucial for
 ```json
 {    
     "event_id" : "",
-    "artifacts" : {
-        "file" : ""
-    },
-    "questions" : [ 
-        {
-            "q_id" : "",
-            "text" : "",
-            "answer" : "",
-            "point_value" : 0,
-            "validation" : []
-        }
-    ]
+    "title" : "",
+    "artifacts" : {},
+    "questions" : []
 	
 	}
 ```
