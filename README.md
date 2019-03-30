@@ -1,4 +1,4 @@
-# Customer Scoring System 
+# Open Scoring System 
 
 This WebApp was created to serve as a method of tracking team progress throughout the BestCyberWarrior event. 
 
