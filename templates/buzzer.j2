@@ -38,13 +38,13 @@
             <div class="col">
 
             </div>
-            <div class="col">
+            <div class="col text-center">
                 <div class="h1 MontserratBlack MainFontColor2 ">USARCENT Buzzer</div>
 
                 <div class="btn-group d-block" role="group" aria-label="Basic example">
-                    <button type="button" class="btn btn-secondary">Jeopardy</button>
-                    <button type="button" class="btn btn-secondary">AYSTACT</button>
-                    <button type="button" class="btn btn-secondary">Right</button>
+                    <button id="J_BUTTON" type="button" class="btn btn-secondary">Jeopardy</button>
+                    <button id="OG_BUTTON" type="button" class="btn btn-secondary">Other Games</button>
+{#                    <button type="button" class="btn btn-secondary">Right</button>#}
                 </div>
             </div>
             <div class="col">
@@ -80,14 +80,24 @@
 
     </div>
     <script>
+
+
+
+
+
+
         $('document').ready(function () {
 
 
             // Triggers a reset of the forum and removal of the buzzer record in the database
             $('#BUZZER_BTN_2').click(function () {
+
+                let team_name = "{{ team_data.name }}"
+
                 $.ajax({
-                        url: '{{ url_for("buzzer_clear") }}',
-                        data: {},
+                        url: '{{ url_for("clear_buzz") }}',
+                        data: JSON.stringify({'name': team_name}),
+                        contentType: 'application/json',
                         method: 'POST',
                         statusCode: {
                             200: function (response) {
@@ -95,9 +105,9 @@
                                 if (response.result === true) {
                                     $('#BUZZER_BTN').text("Try Again").attr('disabled', false);
                                     $('#USER_RESP').attr('readonly', false).val("")
-                                    alert("Your Response has been forfeited, Better Hope you weren't right!!!")
+                                    alert("Buzz Cleared")
                                 } else {
-                                    {#alert("Unable Clear Response")#}
+
                                 }
 
 
@@ -112,20 +122,21 @@
             $('#BUZZER_BTN').click(function () {
                 $('#BUZZER_SOUND').trigger('play')
 
-                var input_data = $('#USER_RESP').val()
-                var team_name = "{{ team_data.name }}"
+                let input_data = $('#USER_RESP').val()
+                let team_name = "{{ team_data.name }}"
 
 
                 $.ajax({
-                        url: '{{ url_for("buzzed") }}',
-                        data: {"user_resp": input_data, "team_name": team_name},
+                        url: '{{ url_for("team_buzzed") }}',
+                        data: JSON.stringify({"user_resp": input_data, "team_name": team_name}),
+                        contentType: 'application/json',
                         method: 'POST',
                         statusCode: {
-                            200: function (response) {
+                            201: function (response) {
 
                                 if (response.result === true) {
                                     $('#USER_RESP').attr('readonly', true)
-                                    $('#BUZZER_BTN').attr('disabled', true).text("Submited")
+                                    $('#BUZZER_BTN').attr('disabled', true).text("Submitted")
                                 }
 
 
@@ -137,22 +148,38 @@
             })
 
             // On page load, checks if response is in the buzzer database, if so populates teh fields and disables
-            // the buzzer button and user response input feild.
+            // the buzzer button and user response input field.
+            let team_name = "{{ team_data.name }}"
+
             $.ajax({
-                url: '{{ url_for("buzzer_load") }}',
-                data: {},
+                url: '{{ url_for("onload_buzz_check") }}',
+                data: JSON.stringify({"team_name": team_name}),
+                contentType: 'application/json',
                 method: 'POST',
                 statusCode: {
                     200: function (response) {
                         if (response.result === true) {
                             $('#USER_RESP').val(String(response.doc.response)).attr('readonly', true)
-                            $('#BUZZER_BTN').attr('disabled', true).text("Submited")
+                            $('#BUZZER_BTN').attr('disabled', true).text("Buzzed")
                         }
 
+
+                    },
+                    417: function(){
 
                     }
 
                 }
+            })
+
+
+
+            $('#J_BUTTON').click(function () {
+                $('#USER_RESP').attr('disabled', true)
+            })
+
+            $('#OG_BUTTON').click(function () {
+                $('#USER_RESP').attr('disabled', false)
             })
         })
 

@@ -20,7 +20,7 @@
         <div class="col col-sm text-center">
             <img class="center" src="../static/img/cw_logo_bg.jpg" alt="Best CyberWarrior Logo">
             <br>
-            <p class="h4 TextFont font-weight-bold MainFontColor2">Logged in as: {{ team_data.name }}</p>
+            <p class="h4 TextFont font-weight-bold MainFontColor2">Logged in as: {{ team_data.alias }}</p>
             <p class="h5 HeaderPoint MainFontColor" id="POINT_TOTAL">Point Total: <span id="TeamScore"></span>
         </div>
 
@@ -52,7 +52,8 @@
                                 Help
                             </a>
                             <div class="dropdown-menu DropDownFontSize" aria-labelledby="navbarDropdownMenuLink">
-                                <a class="dropdown-item MontserratBlack MainFontColor " href="/pcapoverview">PCAP OverView</a>
+                                <a class="dropdown-item MontserratBlack MainFontColor " href="/pcapoverview">PCAP
+                                    OverView</a>
 
 
                             </div>
@@ -70,12 +71,29 @@
                                 <a class="dropdown-item MontserratBlack MainFontColor" href="/pcap3">PCAP Level 3</a>
                                 <a class="dropdown-item MontserratBlack MainFontColor2" href="/opcyberjustice">#OpCyber
                                     Justice</a>
-                                <a class="dropdown-item MontserratBlack MainFontColor" href="/buzzer">Buzzer</a>
+                                <a class="dropdown-item MontserratBlack MainFontColor" href="{{ url_for("buzzer") }}">Buzzer</a>
+
 
                             </div>
                         </li>
 
-                        <a class="nav-link" href="/dropsession" style="font-size: 13px">Sign Out</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle MontserratBlack MainFontColor" href="#"
+                               id="navbarDropdownMenuLink"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Admin
+                            </a>
+                            <div class="dropdown-menu DropDownFontSize" aria-labelledby="navbarDropdownMenuLink">
+                                <a id="RM_MENU" class="dropdown-item MontserratBlack MainFontColor2"
+                                   href="{{ url_for('ringmaster') }}">RingMaster</a>
+
+                                <a id="MONITOR_MENU" class="dropdown-item MontserratBlack MainFontColor"
+                                   href="{{ url_for('monitor') }}">Buzzer Monitor</a>
+
+                            </div>
+                        </li>
+
+                        <a class="nav-link" href="{{ url_for("dropsession") }}" style="font-size: 13px">Sign Out</a>
 
                     </ul>
                 </div>
@@ -95,7 +113,7 @@
 
 <script>
 
-    function updateScore(){
+    function updateScore() {
         var user = "{{ team_data.name }}"
 
         $.ajax({
@@ -116,7 +134,14 @@
 
     $(document).ready(function () {
 
+
         updateScore()
+
+        if ("{{ team_data.name }}" !== "ringmaster") {
+            console.log("TestTEams")
+            $("#RM_MENU").attr('href', "#")
+            $("#MONITOR_MENU").attr('href', "#")
+        }
 
 
     });

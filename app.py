@@ -1,13 +1,17 @@
+import argparse
 import json
 
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
 
-from scorekeeper.const import JSON_RESPONSE_HEADERS, STATUS_201_CREATED, STATUS_417_EXPECTATION_FAILED, \
-    STATUS_200_SUCCESS, STATUS_400_BAD_REQUEST
+from scorekeeper.const import (JSON_RESPONSE_HEADERS,
+                               STATUS_201_CREATED,
+                               STATUS_417_EXPECTATION_FAILED,
+                               STATUS_200_SUCCESS,
+                               STATUS_400_BAD_REQUEST)
 from scorekeeper.db import TeamsDB, EventsDB, BuzzerTrackerDB
 from scorekeeper.forms import LoginForm
 
-# TODO: Establishes connection the  Monogo Databases
+# TODO: Establishes connection the  MongoDB Servers
 team_db = TeamsDB("192.168.99.100:27017")
 event_db = EventsDB("192.168.99.100:27017")
 buzzer_db = BuzzerTrackerDB("192.168.99.100:27017")
@@ -74,14 +78,16 @@ def home():
 
 @app.route('/')
 def index():
-    if session.get("username"):
-        if session['username'] == "ringmaster":
-            return redirect(url_for("ringmaster"))
-
     if g.user:
         return redirect(url_for("home"))
 
     return redirect(url_for('login'))
+
+
+@app.route("/monitor")
+def monitor():
+    team_doc = team_db.get_team_doc(session['username'])
+    return render_template("monitor.j2", team_data=team_doc)
 
 
 @app.route('/pcap1', methods=['GET', 'POST'])
@@ -171,6 +177,7 @@ def instructions():
     team_doc = team_db.get_team_doc(session['username'])
     return render_template("instructions.j2", team_data=team_doc)
 
+
 @app.before_request
 def before_request():
     g.user = None
@@ -178,8 +185,8 @@ def before_request():
         g.user = session['username']
 
 
-### Routes used for FrontEnd data calls ###
-@app.route("/getteamscore", methods=['POST'])
+### API Endpoints used for FrontEnd data calls ###
+@app.route("/api/v1/getteamscore", methods=['POST'])
 def getteamscore():
     """
     Gets the current score for the specified team
@@ -200,8 +207,8 @@ def getteamscore():
                     headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route("/validate", methods=['POST'])
-def validate():
+@app.route("/api/v1/validate_response", methods=['POST'])
+def validate_response():
     data = request.json
     response = data.get("response")
     name = data.get("name")
@@ -232,7 +239,8 @@ def validate():
                     "event_id": event_id,
                     "q_id": q_id,
                     "response": response,
-                    "points_awarded": True
+                    "points_awarded": True,
+                    "point_value": question['point_value']
                 }
 
                 team_obj['responses'].append(new_response)
@@ -252,7 +260,42 @@ def validate():
                     headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route('/dropsession')
+@app.route("/api/v1/new_response", methods=['POST'])
+def new_response():
+    if request.json:
+        data = request.json
+
+    if not event_db.get_event(data.get("event_id")):
+        return Response(json.dumps({"result": False, "msg": f"Invalid event_id provided"}),
+                        status=STATUS_417_EXPECTATION_FAILED,
+                        headers=JSON_RESPONSE_HEADERS)
+
+    new_response = {
+        "team_name": data['team_name'],
+        "event_id": data['event_id'],
+        "q_id": data['q_id'],
+        "response": data['response'],
+        "point_value": data['point_value']
+    }
+    if team_db.get_team_doc(new_response.get("team_name")):
+        ## TODO: Adds new response to team.
+        try:
+            if team_db.add_response(new_response.get("team_name"), new_response):
+                return Response(json.dumps({"result": True, "msg": "Response Successful"}),
+                                status=STATUS_200_SUCCESS,
+                                headers=JSON_RESPONSE_HEADERS)
+        except Exception as err:
+
+            return Response(json.dumps({"result": False, "msg": f"{str(err)}"}),
+                            status=STATUS_400_BAD_REQUEST,
+                            headers=JSON_RESPONSE_HEADERS)
+    else:
+        return Response(json.dumps({"result": False, "msg": f"Team {new_response.get('team_name')} does not exist"}),
+                        status=STATUS_417_EXPECTATION_FAILED,
+                        headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route('/api/v1/dropsession')
 def dropsession():
     """
     This endpoint drops the users active session.
@@ -262,16 +305,7 @@ def dropsession():
     return redirect(url_for("login"))
 
 
-# Marked for removal after javascript refactoring
-@app.route('/rest_response')
-def rest_response():
-    if team_db.reset_responses(session['username']):
-        return Response
-
-    return Response
-
-
-@app.route('/reset_response', methods=['POST'])
+@app.route('/api/v1/reset_response', methods=['POST'])
 def reset_response():
     """
     Resets the responses and clear the points for the provided name.
@@ -297,7 +331,7 @@ def reset_response():
                         headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route('/team_buzzed', methods=['POST'])
+@app.route('/api/v1/team_buzzed', methods=['POST'])
 def team_buzzed():
     """
     Creates buzzed record in the buzzer_tracker database. This function will timestamp each buzzed event.
@@ -324,7 +358,7 @@ def team_buzzed():
                             headers=JSON_RESPONSE_HEADERS)
 
         if buzzer_db.buzzed(resp_example):
-            return Response(json.dumps({"msg": f'User: "{team_name}" has been created', "result": True}),
+            return Response(json.dumps({"msg": f'User: {team_name} buzz has been submitted', "result": True}),
                             status=STATUS_201_CREATED,
                             headers=JSON_RESPONSE_HEADERS)
         else:
@@ -339,27 +373,7 @@ def team_buzzed():
                         headers=JSON_RESPONSE_HEADERS)
 
 
-# Marked for removal after javascript refactoring
-@app.route('/buzzed', methods=['POST'])
-def buzzed():
-    data = request.form
-    team_name = session['username']
-    user_resp = data['user_resp']
-
-    resp_example = {
-        "team_name": team_name,
-        "response": user_resp,
-        "time_stamp": 0.0,
-        "time": "",
-        "submitted": False
-    }
-
-    result = buzzer_db.buzzed(resp_example)
-
-    return Response(json.dumps({"result": result}), status=200, headers=JSON_RESPONSE_HEADERS)
-
-
-@app.route('/clear_buzz', methods=['POST'])
+@app.route('/api/v1/clear_buzz', methods=['POST'])
 def clear_buzz():
     """
     Clears the buzz entry from the buzz tracker database.
@@ -385,30 +399,38 @@ def clear_buzz():
                         headers=JSON_RESPONSE_HEADERS)
 
 
-# Marked for removal after javascript refactoring
-@app.route('/buzzer_clear', methods=['POST'])
-def buzzer_clear():
-    team_name = session['username']
-    if buzzer_db.remove_response(team_name):
-        return Response(json.dumps({"result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
+@app.route('/api/v1/reset_buzzers', methods=['GET'])
+def reset_buzzers():
+    if buzzer_db.reset():
+        return Response(
+            json.dumps({"msg": f'Successful', "data": None}),
+            status=STATUS_200_SUCCESS,
+            headers=JSON_RESPONSE_HEADERS)
+    else:
+        return Response(
+            json.dumps({"msg": f'Nothing to Remove', "data": None}),
+            status=STATUS_417_EXPECTATION_FAILED,
+            headers=JSON_RESPONSE_HEADERS)
 
-    return Response(json.dumps({"result": False}), status=200, headers=JSON_RESPONSE_HEADERS)
 
+@app.route('/api/v1/buzzers', methods=['GET'])
+def buzzers():
+    sorted_docs = buzzer_db.get_positions()
 
-# Marked for removal after javascript refactoring
-@app.route('/buzzer_load', methods=['POST'])
-def buzzer_load():
-    team_name = session['username']
-    if buzzer_db.is_present(team_name):
-        doc = buzzer_db.get_response(team_name)
+    new_docs = []
+    for indx, doc in enumerate(sorted_docs):
+        doc['index'] = indx + 1
         del doc['_id']
-        print(doc)
-        return Response(json.dumps({"doc": doc, "result": True}), status=200, headers=JSON_RESPONSE_HEADERS)
+        new_docs.append(doc)
 
-    return Response(json.dumps({"result": False, "doc": None}), status=200, headers=JSON_RESPONSE_HEADERS)
+    return Response(
+        json.dumps({"msg": f'Successful', "data": new_docs}),
+        status=STATUS_200_SUCCESS,
+        headers=JSON_RESPONSE_HEADERS)
+    pass
 
 
-@app.route('/onload_buzz_check', methods=['POST'])
+@app.route('/api/v1/onload_buzz_check', methods=['POST'])
 def onload_buzz_check():
     try:
         data = request.json
@@ -421,6 +443,7 @@ def onload_buzz_check():
                             status=STATUS_200_SUCCESS,
                             headers=JSON_RESPONSE_HEADERS)
         else:
+            print(team_name)
             return Response(json.dumps({"doc": None, "result": False, "msg": f'{team_name} not found'}),
                             status=STATUS_417_EXPECTATION_FAILED,
                             headers=JSON_RESPONSE_HEADERS)
@@ -432,7 +455,7 @@ def onload_buzz_check():
             headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route("/register", methods=['POST'])
+@app.route("/api/v1/register", methods=['POST'])
 def register():
     """
     Registers a new team to the database. Checks if the team is already present, will not over right if True.
@@ -443,7 +466,8 @@ def register():
 
     name = data.get("name")
     passwd = data.get("passwd")
-    if team_db.add_team(name, passwd):
+    alias = data.get("alias")
+    if team_db.add_team(name, passwd, alias):
         return Response(json.dumps({"msg": f'User: "{name}" has been created', "result": True}),
                         status=STATUS_201_CREATED,
                         headers=JSON_RESPONSE_HEADERS)
@@ -454,7 +478,7 @@ def register():
                         headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route("/unregister", methods=['POST'])
+@app.route("/api/v1/unregister", methods=['POST'])
 def unregister():
     data = request.json
     name = data.get("name")
@@ -467,7 +491,7 @@ def unregister():
                     headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route("/new_event", methods=['POST'])
+@app.route("/api/v1/new_event", methods=['POST'])
 def new_event():
     """
     Adds a new event to the database.
@@ -486,7 +510,7 @@ def new_event():
                         headers=STATUS_417_EXPECTATION_FAILED)
 
 
-@app.route("/new_event_questions", methods=['POST'])
+@app.route("/api/v1/new_event_questions", methods=['POST'])
 def new_event_questions():
     """
     Adds new questions to the supplied event ID.
@@ -506,7 +530,7 @@ def new_event_questions():
         headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route("/remove_event_questions", methods=['POST'])
+@app.route("/api/v1/remove_event_questions", methods=['POST'])
 def remove_event_questions():
     """
     Removes a list of questions from an event.
@@ -526,7 +550,7 @@ def remove_event_questions():
                         headers=JSON_RESPONSE_HEADERS)
 
 
-@app.route("/leaderboard", methods=['GET'])
+@app.route("/api/v1/leaderboard", methods=['GET'])
 def leaderboard():
     """
     Retrieves the current team standings of the game.
@@ -565,4 +589,17 @@ def remove_event():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    parser = argparse.ArgumentParser(
+        description="CLI Helper for the OpenScoreServer WebApp")
+
+    parser.add_argument("-d", "--debug", help="Runs the App in debug mode", action="store_true")
+    parser.add_argument("-n", "--normal", help="Runs the App in normal mode", action="store_true")
+
+    args = parser.parse_args()
+    if args.debug:
+        app.run(debug=True, host="0.0.0.0")
+
+    if args.normal:
+        app.run(host="0.0.0.0")
+
+    parser.print_help()

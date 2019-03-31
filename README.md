@@ -21,7 +21,26 @@ that can be crucial for
 ## Endpoints
 - /register['POST'] - Registers a new team to the database. 
 - /unregister['POST']  - unRegisters a team in the database.
-- /getteamscore['POST']  - Gets the current score for the specified team
+### /api/v1/getteamscore
+    Methods: POST  
+    Description: Gets the current score for the specified team
+Request Model
+```json
+{
+	"name": ""
+}
+```
+
+Response Model
+- 200
+```json
+{
+    "name": "team5",
+    "points": 25
+}
+```
+    
+    
 - /reset_response['POST']  - Resets the responses and clear the points for the name provided 
 - /validate['POST']  - Validates the user input for the question located in the events database 
 - /team_buzzed['POST']  - Creates buzzed record in the buzzer_tracker database. This function will timestamp each buzzed event.

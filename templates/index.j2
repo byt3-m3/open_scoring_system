@@ -4,8 +4,7 @@
 
 
 
-    <script src="../static/js/jquery.tablesorter.combined.js"></script>
-    <link rel="stylesheet" href="../static/css/theme.blue.css">
+
     <link rel="stylesheet" href="../static/css/theme.bootstrap.min.css">
 
     <div class="container">
@@ -17,7 +16,7 @@
 
             <div class="col">
                 <div class="h1 MontserratBlack MainFontColor">Leader Board</div>
-                
+
                 <ol class="list-group list-group-flush" id="TEAM_LIST" style="font-size: 24px">
 
                 </ol>
@@ -25,7 +24,7 @@
             </div>
 
             <div class="col">
-                 <img src="../static/img/usarcent_logo.png" alt="">
+                <img src="../static/img/usarcent_logo.png" alt="">
             </div>
 
 
@@ -48,11 +47,18 @@
                         $('#TEAM_LIST').empty()
 
                         teams.forEach(function (element) {
+                            if (element.name != "ringmaster") {
+                                if (element.alias) {
+                                    $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.alias} - ${element.points} pts</li>`);
+                                } else {
+                                    $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.name.toUpperCase()} - ${element.points} pts</li>`);
+                                }
 
+                            }
 
-                            $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.name.toUpperCase()} - ${element.points} pts</li>`);
 
                         })
+
 
                     },
 
@@ -71,6 +77,8 @@
         $('document').ready(function () {
             makeLeaderboard()
             setInterval(makeLeaderboard, 5000);
+
+
         })
 
     </script>

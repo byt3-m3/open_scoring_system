@@ -31,7 +31,7 @@
                     var name = "{{team_data.name}}";
 
                     $.ajax({
-                            url: '{{ url_for("validate") }}',
+                            url: '{{ url_for("validate_response") }}',
                             data: JSON.stringify({"response": response, "q_id": q_id, "event_id": event_id, "name": name}),
                             method: 'POST',
                             contentType: "application/json",

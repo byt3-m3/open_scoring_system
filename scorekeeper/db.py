@@ -215,6 +215,30 @@ class TeamsDB:
         else:
             raise Exception("'responses' Already Present for record '{}'".format(name))
 
+    def add_response(self, name, response_dict):
+        doc = self.get_team_doc(response_dict.get("team_name"))
+
+        '''
+            Checks if the response already is present in the teams response, if so, it will deduct the previous
+            points and update the record with the new response
+        '''
+        for i, response in enumerate(doc['responses']):
+
+            if response_dict['event_id'] == response['event_id']:
+
+                doc['responses'].pop(i)
+                doc['points'] -= response['point_value']
+                doc['responses'].append(response_dict)
+                doc['points'] += response_dict['point_value']
+                self.collections.update_one({"name": response_dict['team_name']}, {'$set': doc})
+                return True
+
+        doc['responses'].append(response_dict)
+        doc['points'] += response_dict['point_value']
+        self.collections.update_one({"name": response_dict['team_name']}, {'$set': doc})
+        print("No Match")
+        return True
+
     def get_responses(self, name):
         doc = self.get_team_doc(name)
         if not doc:
@@ -276,11 +300,12 @@ class TeamsDB:
 
         return False
 
-    def add_team(self, name, passwd):
+    def add_team(self, name, passwd, alias):
         doc = self._default_model()
 
         doc['name'] = name
         doc['passwd'] = passwd
+        doc['alias'] = alias
         if self.get_team_doc(name):
             return False
         else:
@@ -388,8 +413,8 @@ class BuzzerTrackerDB:
 
         docs = self.get_responses()
         result = sorted(docs, key=lambda i: i['time_stamp'])
-        from pprint import pprint
-        pprint(result)
+
+        return result
 
     def add_response(self, doc):
         if not self.get_response(doc['team_name']):
@@ -480,15 +505,15 @@ def test_buzzer_class():
     #         "submitted": True
     #     }
     #     print(buzzer_db.add_response(resp_example))
-    buzzer_db.buzzed("team2")
-    buzzer_db.buzzed("team1")
-
-    buzzer_db.buzzed("team3")
-    buzzer_db.buzzed("team4")
-    buzzer_db.buzzed("team5")
+    # buzzer_db.buzzed("team2")
+    # buzzer_db.buzzed("team1")
+    #
+    # buzzer_db.buzzed("team3")
+    # buzzer_db.buzzed("team4")
+    # buzzer_db.buzzed("team5")
 
     buzzer_db.get_positions()
 
 
 if __name__ == '__main__':
-    events_test()
+    test_buzzer_class()
