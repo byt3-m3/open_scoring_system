@@ -3,6 +3,35 @@
 {% block  content %}
 
     <div class="container">
+         <div class="row text-center">
+            <div class="col">
+                <img src="../static/img/usarcent_logo.png" alt="">
+            </div>
+
+            <div class="col">
+                <div class="h1 MontserratBlack MainFontColor">Leader Board</div>
+
+                <ol class="list-group list-group-flush" id="TEAM_LIST" style="font-size: 24px">
+
+                </ol>
+
+            </div>
+
+            <div class="col">
+                <img src="../static/img/usarcent_logo.png" alt="">
+            </div>
+         </div>
+
+        <div class="row" style="margin-bottom: 4%">
+            <div class="col">
+                <button id="RESET_RESP" class="btn btn-danger">Reset Responses</button>
+                <button id="NEW_USER" class="btn btn-primary">New User</button>
+                <button class="btn btn-primary">Del User</button>
+                <button class="btn btn-primary">Edit User</button>
+                <button class="btn btn-primary">Score Report</button>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col">
                 <select class="mdb-select md-form form-control MontserratBlack"
@@ -45,6 +74,75 @@
 
 
     </div>
+
+
+    <script src="../static/js/main.js"></script>
+
+    <script>
+
+
+
+        $('document').ready(function () {
+
+            makeLeaderboard()
+
+            $('#TEAM_LIST > li').click(function(){
+                alert(this)
+            })
+
+            $('#RESET_RESP').click(function () {/// Resets all users responses in the database
+
+
+                if (window.confirm("Are you sure you would like to reset all team responses, this action is irreversible.")) {
+
+                    $.ajax({
+                        "url": "{{ url_for("reset_all_responses") }}",
+                        data: {}, //Insert FormData feilds here.
+                        method: 'GET',
+                        statusCode: {
+                            200: function (response) {
+                                if (response.result == true) {
+                                    alert("All Responses Have Been Cleared")
+                                }
+
+
+                            },
+                            201: function (response) {
+
+                            },
+
+                            400: function (response) {
+
+                            },
+                            404: function (response) {
+
+                            },
+
+                            417: function (response) {
+
+                            },
+                            500: function (response) {
+
+                            }
+                        }
+                    })
+
+                }
+
+
+            })
+
+
+            $('#NEW_USER').click(function(){ ///Opens form to create a new user.
+                popup("http://127.0.0.1:5000", "NewUserForm")
+            })
+
+
+
+            setInterval(makeLeaderboard, 5000);
+        })
+
+    </script>
 
     <script>
         function isNumber(value) {

@@ -215,27 +215,27 @@ class TeamsDB:
         else:
             raise Exception("'responses' Already Present for record '{}'".format(name))
 
-    def add_response(self, name, response_dict):
-        doc = self.get_team_doc(response_dict.get("team_name"))
+    def add_response(self, name, new_response: dict):
+        doc = self.get_team_doc(new_response.get("team_name"))
 
         '''
             Checks if the response already is present in the teams response, if so, it will deduct the previous
             points and update the record with the new response
         '''
-        for i, response in enumerate(doc['responses']):
+        for i, old_response in enumerate(doc['responses']):
 
-            if response_dict['event_id'] == response['event_id']:
+            if new_response['event_id'] == old_response['event_id']:
 
                 doc['responses'].pop(i)
-                doc['points'] -= response['point_value']
-                doc['responses'].append(response_dict)
-                doc['points'] += response_dict['point_value']
-                self.collections.update_one({"name": response_dict['team_name']}, {'$set': doc})
+                doc['points'] -= old_response['point_value']
+                doc['responses'].append(new_response)
+                doc['points'] += new_response['point_value']
+                self.collections.update_one({"name": new_response['team_name']}, {'$set': doc})
                 return True
 
-        doc['responses'].append(response_dict)
-        doc['points'] += response_dict['point_value']
-        self.collections.update_one({"name": response_dict['team_name']}, {'$set': doc})
+        doc['responses'].append(new_response)
+        doc['points'] += new_response['point_value']
+        self.collections.update_one({"name": new_response['team_name']}, {'$set': doc})
         print("No Match")
         return True
 

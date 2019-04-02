@@ -302,6 +302,23 @@ def new_response():
                         headers=JSON_RESPONSE_HEADERS)
 
 
+@app.route("/api/v1/reset_all_responses", methods=['GET'])
+def reset_all_responses():
+    try:
+        if team_db.reset_all_responses():
+            return Response(json.dumps({"result": True, "msg": "All Responses Cleared"}),
+                            status=STATUS_200_SUCCESS,
+                            headers=JSON_RESPONSE_HEADERS)
+
+    except Exception as err:
+        return Response(json.dumps({"result": False, "msg": f"{str(err)}"}),
+                        status=STATUS_400_BAD_REQUEST,
+                        headers=JSON_RESPONSE_HEADERS)
+
+
+    return Response()
+
+
 @app.route('/api/v1/dropsession')
 def dropsession():
     """
