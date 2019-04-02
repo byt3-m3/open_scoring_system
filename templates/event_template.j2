@@ -3,24 +3,53 @@
 {% block  content %}
 
     <div class="container" style="margin-top: 50px">
-        <h1 class="MontserratBlack">{{ event_data.title }}:</h1><br>
-        <div class="col center">
 
+        <div class="row" style="margin-bottom: 20px">
 
-            <div class="QuestionBody" style="font-size: 20px">
+            <div class="col">
+                <h1 class="MainFontColor">{{ event_data.title }}</h1><br>
+                <h1 class="MainFontColor2">Overview:</h1>
+                <article class="body_text">
+                    {{ event_data.overview }}
+                </article>
+                
 
 
             </div>
-
-            <hr>
         </div>
+        <div class="row">
+            <div class="col">
+                <hr>
+                <h1 class="MainFontColor2">Task:</h1>
+                <ul>
+                    {% for task in event_data.tasks %}
+
+                        <li class="body_text">{{ task }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col justify-content-center">
+                <hr>
+                <h1 class="MainFontColor" style="margin-bottom: 30px">Questions:</h1>
+                <div class="QuestionBody" style="font-size: 20px">
+
+                </div>
+
+                <hr>
+            </div>
+
+        </div>
+
 
     </div>
 
     <script>
-    function validateResp(){
+        function validateResp() {
 
-        $("input").blur(function () {
+            $("input").blur(function () {
                 // Will check if the correct answer is supplied, if not the label turns red, if correct the label turns green
                 var myElement = this
 
@@ -63,7 +92,7 @@
             })
 
 
-    }
+        }
 
 
     </script>
