@@ -8,11 +8,11 @@
 
             <div class="col">
                 <h1 class="MainFontColor">{{ event_data.title }}</h1><br>
-                <h1 class="MainFontColor2">Overview:</h1>
+                <h2 class="MainFontColor2">Overview:</h2>
                 <article class="body_text">
                     {{ event_data.overview }}
                 </article>
-                
+
 
 
             </div>
@@ -20,7 +20,7 @@
         <div class="row">
             <div class="col">
                 <hr>
-                <h1 class="MainFontColor2">Task:</h1>
+                <h2 class="MainFontColor2">Task:</h2>
                 <ul>
                     {% for task in event_data.tasks %}
 
@@ -111,7 +111,7 @@
 
             {% endfor %}
 
-
+            // On page load, if any response, this will populate the response as the HTML value on the page
             {% for resp in event_responses %}
                 $('#{{ resp.q_id }}').val("{{ resp.response }}")
 

@@ -100,7 +100,7 @@ def pcap1():
 
     team_doc = team_db.get_team_doc(session['username'])
 
-    return render_template("pcap1.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
+    return render_template("event_template.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
                            event_responses=event_responses)
 
 
@@ -113,7 +113,7 @@ def pcap2():
 
     team_doc = team_db.get_team_doc(session['username'])
 
-    return render_template("pcap1.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
+    return render_template("event_template.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
                            event_responses=event_responses)
 
 
@@ -125,7 +125,7 @@ def pcap3():
 
     team_doc = team_db.get_team_doc(session['username'])
 
-    return render_template("pcap1.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
+    return render_template("event_template.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
                            event_responses=event_responses)
 
 
@@ -138,7 +138,7 @@ def opcyberjustice():
 
     team_doc = team_db.get_team_doc(session['username'])
 
-    return render_template("pcap1.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
+    return render_template("event_template.j2", team_data=team_doc, questions=event_questions, event_data=event_data,
                            event_responses=event_responses)
 
 
@@ -561,8 +561,8 @@ def leaderboard():
     sorted_docs = team_db.get_teams_positions()
 
     new_docs = []
-    for indx, doc in enumerate(sorted_docs):
-        doc['index'] = indx + 1
+    for i, doc in enumerate(sorted_docs):
+        doc['index'] = i + 1
         new_docs.append(doc)
 
     return Response(

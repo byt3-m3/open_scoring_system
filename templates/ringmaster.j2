@@ -92,7 +92,7 @@
                     let input_value = $(`#${element.name}`).val()
 
                     $.ajax({
-                        "url": "{{ url_for() }}",
+                        "url": "{{ url_for("new_response") }}",
                         data: JSON.stringify({}),
                         contentType: 'application/json',
                         method: 'POST',
