@@ -1,7 +1,9 @@
 import argparse
 import json
+import re
 
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
+
 
 from scorekeeper.const import (JSON_RESPONSE_HEADERS,
                                STATUS_201_CREATED,
@@ -223,7 +225,12 @@ def validate_response():
     question = event_db.get_question(event_id, q_id)
     if question:
         if question.get("answer"):
-            if question.get("answer") == response:
+
+
+            pattern = re.compile(f'{question.get("answer")}', re.I)
+
+            # if question.get("answer") == response: # Uncomment if no Regex Searches are desired
+            if len(pattern.findall(response)) > 0:
 
                 cached_resp = team_db.get_response_by_event_id(name, event_id, q_id)
 

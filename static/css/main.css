@@ -3,6 +3,10 @@
     font-size: 20px;
 }
 
+.body {
+    font-family:  Helvetica Neue,Helvetica,Arial,sans-serif;
+}
+
 .help_images {
     height: 630px;
     widthi: 807px;
