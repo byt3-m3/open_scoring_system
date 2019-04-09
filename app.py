@@ -4,7 +4,6 @@ import re
 
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
 
-
 from scorekeeper.const import (JSON_RESPONSE_HEADERS,
                                STATUS_201_CREATED,
                                STATUS_417_EXPECTATION_FAILED,
@@ -169,15 +168,43 @@ def ringmaster():
     team_doc = team_db.get_team_doc(session['username'])
     games_list = event_db.get_game_list()
 
-    docs = team_db.get_all_docs()
+    docs = team_db.collections.find({"name": {"$not": {"$eq": "ringmaster"}}})
 
-    return render_template("ringmaster.j2", team_data=team_doc, games_list=games_list, team_docs=docs)
+    new_docs = []
+    for i, doc in enumerate(docs):
+        if doc['name'] == "ringmaster":
+            docs.pop(i)
+        else:
+            del doc['_id']
+
+            doc['index'] = i + 1
+            new_docs.append(doc)
+
+    return render_template("ringmaster.j2", team_data=team_doc, games_list=games_list, team_docs=new_docs)
 
 
 @app.route('/instructions')
 def instructions():
     team_doc = team_db.get_team_doc(session['username'])
     return render_template("instructions.j2", team_data=team_doc)
+
+
+@app.route('/new_team', methods=['GET', 'POST'])
+def new_team():
+    return render_template("new_team.j2")
+
+
+@app.route('/team_table', methods=['GET'])
+def team_table():
+    docs = team_db.collections.find({"name": {"$not": {"$eq": "ringmaster"}}})
+
+    new_docs = []
+    for i, doc in enumerate(docs):
+        del doc['_id']
+        doc['index'] = i + 1
+        new_docs.append(doc)
+
+    return render_template("team_table.j2", docs=new_docs)
 
 
 @app.before_request
@@ -217,20 +244,21 @@ def validate_response():
     q_id = data.get("q_id")
     event_id = data.get("event_id")
 
+    # Preforms quick check to validate teams are in database.
     if not team_db.get_team_doc(name):
         return Response(json.dumps({"result": False, "msg": "Invalid Team Name"}),
                         status=STATUS_400_BAD_REQUEST,
                         headers=JSON_RESPONSE_HEADERS)
 
+    # Extracts the question data from the database to check against question response.
     question = event_db.get_question(event_id, q_id)
     if question:
         if question.get("answer"):
 
-
             pattern = re.compile(f'{question.get("answer")}', re.I)
 
-            # if question.get("answer") == response: # Uncomment if no Regex Searches are desired
-            if len(pattern.findall(response)) > 0:
+            if question.get("answer") == response:  # Uncomment if no Regex Searches are desired
+                # if len(pattern.findall(response)) > 0:
 
                 cached_resp = team_db.get_response_by_event_id(name, event_id, q_id)
 
@@ -242,12 +270,14 @@ def validate_response():
 
                 team_obj = team_db.get_team_doc(name)
 
+                # Constructs new response object
                 new_response = {
                     "event_id": event_id,
                     "q_id": q_id,
                     "response": response,
                     "points_awarded": True,
-                    "point_value": question['point_value']
+                    "point_value": question['point_value'],
+                    "attempts": cached_resp.get("attempts", 0) + 1 if cached_resp is not None else 0 + 1
                 }
 
                 team_obj['responses'].append(new_response)
@@ -258,6 +288,28 @@ def validate_response():
                                 status=STATUS_200_SUCCESS,
                                 headers=JSON_RESPONSE_HEADERS)
             else:
+                cached_resp = team_db.get_response_by_event_id(name, event_id, q_id)
+
+                new_response = {
+                    "event_id": event_id,
+                    "q_id": q_id,
+                    "response": response,
+                    "points_awarded": False,
+                    "point_value": question['point_value'],
+                    "attempts": cached_resp.get("attempts", 0) + 1 if cached_resp is not None else 0 + 1
+                }
+                team_obj = team_db.get_team_doc(name)
+
+                for i, resp in enumerate(team_obj['responses']):
+                    if resp.get("event_id") == new_response['event_id']:
+                        index = i
+                        team_obj['responses'].pop(index)
+                        team_obj['points'] -= new_response['point_value']
+
+                team_obj['responses'].append(new_response)
+                team_obj['points'] += int(question['point_value'])
+                team_db.update_data(name, team_obj)
+
                 return Response(json.dumps({"result": False, "msg": "Incorrect"}),
                                 status=STATUS_200_SUCCESS,
                                 headers=JSON_RESPONSE_HEADERS)
@@ -271,7 +323,7 @@ def validate_response():
 def new_response():
     if request.json:
         data = request.json
-
+        print(data)
     if not event_db.get_event(data.get("event_id")):
         return Response(json.dumps({"result": False, "msg": f"Invalid event_id provided"}),
                         status=STATUS_417_EXPECTATION_FAILED,
@@ -282,7 +334,8 @@ def new_response():
         "event_id": data['event_id'],
         "q_id": data['q_id'],
         "response": data['response'],
-        "point_value": data['point_value']
+        "point_value": data.get("point_value", 0),
+
     }
     if team_db.get_team_doc(new_response.get("team_name")):
         ## TODO: Adds new response to team.
@@ -292,7 +345,7 @@ def new_response():
                                 status=STATUS_200_SUCCESS,
                                 headers=JSON_RESPONSE_HEADERS)
         except Exception as err:
-
+            print(err)
             return Response(json.dumps({"result": False, "msg": f"{str(err)}"}),
                             status=STATUS_400_BAD_REQUEST,
                             headers=JSON_RESPONSE_HEADERS)
@@ -314,7 +367,6 @@ def reset_all_responses():
         return Response(json.dumps({"result": False, "msg": f"{str(err)}"}),
                         status=STATUS_400_BAD_REQUEST,
                         headers=JSON_RESPONSE_HEADERS)
-
 
     return Response()
 
@@ -490,8 +542,8 @@ def register():
 
     name = data.get("name")
     passwd = data.get("passwd")
-    alias = data.get("alias")
-    if team_db.add_team(name, passwd, alias):
+
+    if team_db.add_team(name, passwd):
         return Response(json.dumps({"msg": f'User: "{name}" has been created', "result": True}),
                         status=STATUS_201_CREATED,
                         headers=JSON_RESPONSE_HEADERS)
@@ -593,6 +645,25 @@ def leaderboard():
         json.dumps({"msg": f'Successful', "data": new_docs}),
         status=STATUS_200_SUCCESS,
         headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route("/api/v1/teams", methods=['GET'])
+def teams():
+    try:
+        docs = team_db.get_all_docs()
+
+        for i, doc in enumerate(docs):
+            if doc['name'] == "ringmaster":
+                docs.pop(i)
+
+        return Response(
+            json.dumps({"msg": f'Successful', "data": docs}),
+            status=STATUS_200_SUCCESS,
+            headers=JSON_RESPONSE_HEADERS)
+
+    except Exception as err:
+        print(err)
+        return Response()
 
 
 @app.route("/remove_event", methods=['POST'])

@@ -230,11 +230,13 @@ class TeamsDB:
                 doc['points'] -= old_response['point_value']
                 doc['responses'].append(new_response)
                 doc['points'] += new_response['point_value']
+
                 self.collections.update_one({"name": new_response['team_name']}, {'$set': doc})
                 return True
 
         doc['responses'].append(new_response)
         doc['points'] += new_response['point_value']
+
         self.collections.update_one({"name": new_response['team_name']}, {'$set': doc})
         print("No Match")
         return True
@@ -300,12 +302,12 @@ class TeamsDB:
 
         return False
 
-    def add_team(self, name, passwd, alias):
+    def add_team(self, name, passwd):
         doc = self._default_model()
 
         doc['name'] = name
         doc['passwd'] = passwd
-        doc['alias'] = alias
+        # doc['alias'] = alias
         if self.get_team_doc(name):
             return False
         else:

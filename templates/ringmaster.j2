@@ -3,7 +3,7 @@
 {% block  content %}
 
     <div class="container">
-         <div class="row text-center" style="margin-bottom: 4%">
+        <div class="row text-center" style="margin-bottom: 4%">
             <div class="col">
                 <img src="../static/img/usarcent_logo.png" alt="">
             </div>
@@ -20,21 +20,20 @@
             <div class="col">
                 <img src="../static/img/usarcent_logo.png" alt="">
             </div>
-         </div>
+        </div>
 
         <div class="row " style="margin-bottom: 4%">
             <div class="col justify-content-center text-center">
                 <button id="RESET_RESP" class="btn btn-danger">Reset Responses</button>
-                <button id="NEW_USER" class="btn btn-primary">New User</button>
-                <button class="btn btn-primary">Del User</button>
-                <button class="btn btn-primary">Edit User</button>
+                <button id="NEW_USER" class="btn btn-primary">New Team</button>
+                <button id="EDIT_USER" class="btn btn-primary">Edit Teams</button>
                 <button class="btn btn-primary">Score Report</button>
             </div>
         </div>
 
         <div class="row">
             <div class="col">
-                <select class="mdb-select md-form form-control MontserratBlack"
+                <select class="mdb-select md-form form-control MontserratBlack event_list"
                         style="margin-bottom: 20px;font-size: 20px">
                     <option style="font-size: 25px" value="" disabled selected>Select Activity</option>
                     {% for game in games_list %}
@@ -81,12 +80,11 @@
     <script>
 
 
-
         $('document').ready(function () {
 
             makeLeaderboard()
 
-            $('#TEAM_LIST > li').click(function(){
+            $('#TEAM_LIST > li').click(function () {
                 alert(this)
             })
 
@@ -101,10 +99,10 @@
                         method: 'GET',
                         statusCode: {
                             200: function (response) {
-                                if (response.result == true) {
+                                if (response.result === true) {
                                     alert("All Responses Have Been Cleared")
                                 }
-
+                                updateTeamPoints()
 
                             },
                             201: function (response) {
@@ -133,10 +131,13 @@
             })
 
 
-            $('#NEW_USER').click(function(){ ///Opens form to create a new user.
-                popup("http://127.0.0.1:5000", "NewUserForm")
+            $('#NEW_USER').click(function () { ///Opens form to create a new user.
+                popup("{{ url_for('new_team') }}", "NewTeam")
             })
 
+            $('#EDIT_USER').click(function () {
+                popup("{{ url_for('team_table') }}", "Team Table")
+            })
 
 
             setInterval(makeLeaderboard, 5000);
@@ -150,56 +151,80 @@
         }
 
 
-        var docs = {{ team_docs }};
-        var docs_b = {{ team_docs }};
+        let docs = {{ team_docs }};
+        let docs_b = {{ team_docs }};
 
 
-        var docs_1 = docs.splice(0, 5)
-        var arrayLength_1 = docs_1.length;
+
+
+
+        let docs_1 = docs.splice(0, 5)
+        let arrayLength_1 = docs_1.length;
         for (var i = 0; i < arrayLength_1; i++) {
 
             //Do something
 
-            $('#TEAM_SET_1').append(`<span class="MontserratBlack"> ${docs_1[i].alias}</span> <input id="${docs_1[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_1[i].points} points">`)
+            $('#TEAM_SET_1').append(`<span class="MontserratBlack"> ${docs_1[i].name}</span> <input id="${docs_1[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_1[i].points} points">`)
         }
 
-        var docs_2 = docs.splice(0, 5)
-        var arrayLength_2 = docs_2.length;
+        let docs_2 = docs.splice(0, 5)
+        let arrayLength_2 = docs_2.length;
         for (var i = 0; i < arrayLength_2; i++) {
 
             //Do something
 
-            $('#TEAM_SET_2').append(`<span class="MontserratBlack"> ${docs_2[i].alias}</span> <input id="${docs_2[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_2[i].points} points">`)
+            $('#TEAM_SET_2').append(`<span class="MontserratBlack"> ${docs_2[i].name}</span> <input id="${docs_2[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_2[i].points} points">`)
         }
 
-        var docs_3 = docs.splice(0, 5)
-        var arrayLength_3 = docs_3.length;
+        let docs_3 = docs.splice(0, 5)
+        let arrayLength_3 = docs_3.length;
         for (var i = 0; i < arrayLength_3; i++) {
 
             //Do something
 
-            $('#TEAM_SET_3').append(`<span class="MontserratBlack"> ${docs_3[i].alias}</span> <input id="${docs_3[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_3[i].points} points">`)
+            $('#TEAM_SET_3').append(`<span class="MontserratBlack"> ${docs_3[i].name}</span> <input id="${docs_3[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_3[i].points} points">`)
         }
+
+
+
+
+        $('select.event_list').change(function () {
+            _event_id = $(this).children("option:selected").val()
+            alert(_event_id)
+
+
+
+        })
+
+
 
         $('#AWRD_BTN').click(function () {
             docs_b.forEach(function (element) {
-                let activity = $('select').val();
+                let event_id = $('select').val();
 
-                if (activity) {
+                if (event_id) {
                     /// Preform Update Activities here
-                    let input_value = $(`#${element.name}`).val()
+                    let team_name = element.name
+                    let team_points = $(`#${element.name}`).val()
 
                     $.ajax({
                         "url": "{{ url_for("new_response") }}",
-                        data: JSON.stringify({}),
+                        data: JSON.stringify({
+                            "team_name": team_name,
+                            "event_id": event_id,
+                            "q_id": event_id,
+                            "response": "",
+                            "point_value": Number(team_points),
+                        }),
                         contentType: 'application/json',
                         method: 'POST',
                         statusCode: {
                             200: function (response) {
 
+
                             },
 
-                            400: function (response) {
+                            417: function (response) {
 
                             },
 
@@ -210,10 +235,16 @@
                     })
 
 
-                    console.log(input_value)
                 }
 
             })
+
+
+            alert("Records Submitted.")
+
+            updateTeamPoints()
+
+
         });
 
 
