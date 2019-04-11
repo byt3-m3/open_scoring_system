@@ -1,6 +1,5 @@
 import argparse
 import json
-import re
 
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
 
@@ -238,85 +237,74 @@ def getteamscore():
 
 @app.route("/api/v1/validate_response", methods=['POST'])
 def validate_response():
+    # Extract JSON data from client request
     data = request.json
     response = data.get("response")
     name = data.get("name")
     q_id = data.get("q_id")
     event_id = data.get("event_id")
 
-    # Preforms quick check to validate teams are in database.
+    # Validates the team name is present in database
     if not team_db.get_team_doc(name):
         return Response(json.dumps({"result": False, "msg": "Invalid Team Name"}),
                         status=STATUS_400_BAD_REQUEST,
                         headers=JSON_RESPONSE_HEADERS)
 
-    # Extracts the question data from the database to check against question response.
-    question = event_db.get_question(event_id, q_id)
-    if question:
-        if question.get("answer"):
+    # Extracts the question from database using the event_id and q_id
+    question = event_db.get_question(event_id, q_id) if event_db.get_question(event_id, q_id) else None
+    if not question:
+        return Response(json.dumps({"result": False, "msg": "event_id or q_id is invalid."}),
+                        status=STATUS_400_BAD_REQUEST,
+                        headers=JSON_RESPONSE_HEADERS)
 
-            pattern = re.compile(f'{question.get("answer")}', re.I)
+    # Checks if the team has a previous response in the database
+    cached_resp = team_db.get_response_by_event_id(name, event_id, q_id) if team_db.get_response_by_event_id(name,
+                                                                                                             event_id,
 
-            if question.get("answer") == response:  # Uncomment if no Regex Searches are desired
-                # if len(pattern.findall(response)) > 0:
+                                                                                                             q_id) else None
 
-                cached_resp = team_db.get_response_by_event_id(name, event_id, q_id)
+    # Checks if previous response have points awarded
+    if cached_resp:
+        if cached_resp.get("points_awarded", False):
+            return Response(json.dumps({"result": True, "msg": "Points Already Awarded"}),
+                            status=STATUS_200_SUCCESS,
+                            headers=JSON_RESPONSE_HEADERS)
 
-                if cached_resp:
-                    if cached_resp['points_awarded']:
-                        return Response(json.dumps({"result": True, "msg": "Points Already Awarded"}),
-                                        status=STATUS_200_SUCCESS,
-                                        headers=JSON_RESPONSE_HEADERS)
+    # Constructs the new response model
+    new_response = {
+        "event_id": event_id,
+        "q_id": q_id,
+        "response": response,
+        "points_awarded": False,
+        "point_value": question['point_value'],
+        "attempts": cached_resp.get("attempts", 0) if cached_resp is not None else 0
+    }
 
-                team_obj = team_db.get_team_doc(name)
+    # Checks if the question answer matches the users response, if True aware points and updated model
+    if question.get("answer") == response:
+        new_response['points_awarded'] = True
+        team_db.incr_points(name, question.get("point_value"))
+        team_db.update_response(name, event_id, q_id, new_response)
 
-                # Constructs new response object
-                new_response = {
-                    "event_id": event_id,
-                    "q_id": q_id,
-                    "response": response,
-                    "points_awarded": True,
-                    "point_value": question['point_value'],
-                    "attempts": cached_resp.get("attempts", 0) + 1 if cached_resp is not None else 0 + 1
-                }
+        return Response(json.dumps({"result": True, "msg": "Correct"}),
+                        status=STATUS_200_SUCCESS,
+                        headers=JSON_RESPONSE_HEADERS)
 
-                team_obj['responses'].append(new_response)
-                team_obj['points'] += int(question['point_value'])
-                team_db.update_data(name, team_obj)
+    else:
 
-                return Response(json.dumps({"result": True, "msg": "Correct"}),
-                                status=STATUS_200_SUCCESS,
-                                headers=JSON_RESPONSE_HEADERS)
-            else:
-                cached_resp = team_db.get_response_by_event_id(name, event_id, q_id)
+        new_response['points_awarded'] = False
+        new_response['attempts'] = new_response['attempts'] + 1
+        point_val = question.get("point_value") * -1
 
-                new_response = {
-                    "event_id": event_id,
-                    "q_id": q_id,
-                    "response": response,
-                    "points_awarded": False,
-                    "point_value": question['point_value'],
-                    "attempts": cached_resp.get("attempts", 0) + 1 if cached_resp is not None else 0 + 1
-                }
-                team_obj = team_db.get_team_doc(name)
+        # Checks if response attempts is greater than 3, if so points will be deducted.
+        if new_response['attempts'] > 3:
+            team_db.incr_points(name, point_val)
+            new_response['attempts'] = 0  # Resets attempts to 0
 
-                for i, resp in enumerate(team_obj['responses']):
-                    if resp.get("event_id") == new_response['event_id']:
-                        index = i
-                        team_obj['responses'].pop(index)
-                        team_obj['points'] -= new_response['point_value']
-
-                team_obj['responses'].append(new_response)
-                team_obj['points'] += int(question['point_value'])
-                team_db.update_data(name, team_obj)
-
-                return Response(json.dumps({"result": False, "msg": "Incorrect"}),
-                                status=STATUS_200_SUCCESS,
-                                headers=JSON_RESPONSE_HEADERS)
-
-    return Response(json.dumps({"result": False, "msg": "Event not Found"}),
-                    status=STATUS_417_EXPECTATION_FAILED,
-                    headers=JSON_RESPONSE_HEADERS)
+        team_db.update_response(name, event_id, q_id, new_response)
+        return Response(json.dumps({"result": False, "msg": "Incorrect Answer"}),
+                        status=STATUS_200_SUCCESS,
+                        headers=JSON_RESPONSE_HEADERS)
 
 
 @app.route("/api/v1/new_response", methods=['POST'])

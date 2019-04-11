@@ -68,12 +68,24 @@
                                 200: function (response) {
                                     if (response.result === false) {
                                         $(`label[for=${q_id}]`).css({color: "red"})
-
+                                        updateScore()
 
                                     } else {
 
                                         $(`label[for=${q_id}]`).css({color: "green"})
                                         updateScore()
+
+                                    }
+
+
+                                },
+                                417: function (response) {
+                                    console.log(response)
+
+                                },
+                                400: function (response) {
+                                    if (response.result === true) {
+                                        $(`label[for=${q_id}]`).css({color: "green"})
                                     }
 
 
@@ -106,7 +118,7 @@
             // Generates questions from the database on the WebSite
             {% for question in questions %}
 
-                $('.QuestionBody').append('<label class="MontserratBlack" class="{{ question.q_id }}" for="{{ question.q_id }}">{{ question.text }}</label>\n' +
+                $('.QuestionBody').append('<label class="font-weight-bold" class="{{ question.q_id }}" for="{{ question.q_id }}">{{ question.text }} <span class=MainFontColor>{{ question.point_value }}pts</span></label>\n' +
                     '            <input placeholder="Cmon Think About It.." class="form-control" id="{{ question.q_id }}" type="text"> ')
 
             {% endfor %}

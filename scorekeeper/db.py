@@ -225,7 +225,6 @@ class TeamsDB:
         for i, old_response in enumerate(doc['responses']):
 
             if new_response['event_id'] == old_response['event_id']:
-
                 doc['responses'].pop(i)
                 doc['points'] -= old_response['point_value']
                 doc['responses'].append(new_response)
@@ -251,6 +250,39 @@ class TeamsDB:
         else:
             return []
 
+    def update_response(self, team_name, event_id, q_id, new_response):
+        '''
+        Updates the selected teams responses. If the response is present in the list,
+        this function will replace the response, if the response is not present in the database
+        this function is will add a new response to the database.
+
+
+        :param team_name:
+        :param event_id:
+        :param q_id:
+        :param new_response:
+        :return:
+        '''
+        team_doc = self.get_team_doc(team_name)
+
+        for idx, response in enumerate(team_doc.get("responses")):
+
+            if response.get("q_id") == q_id:
+
+                team_doc.get("responses").pop(idx)
+                team_doc.get("responses").append(new_response)
+
+                if self.collections.update_one({"name": team_name}, {"$set": team_doc}):
+                    return True
+                else:
+                    return False
+
+        team_doc.get("responses").append(new_response)
+        if self.collections.update_one({"name": team_name}, {"$set": team_doc}):
+            return True
+        else:
+            return False
+
     def get_responses_by_event_id(self, team_name, event_id):
         doc = self.get_team_doc(team_name)
         if not doc:
@@ -269,7 +301,7 @@ class TeamsDB:
 
     def get_response_by_event_id(self, team_name, event_id, q_id):
         resp = self.get_responses_by_event_id(team_name, event_id)
-        for r in resp:
+        for i, r in enumerate(resp):
             if r['q_id'] == q_id:
                 return r
 
