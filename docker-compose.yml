@@ -6,7 +6,6 @@ services:
     ports:
       - 5000:5000
     environment:
-#      - DB_HOST=192.168.1.124
       - DB_PORT=27017
       - APP_PORT=5000
 
