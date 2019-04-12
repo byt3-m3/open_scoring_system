@@ -27,7 +27,7 @@
                 <button id="RESET_RESP" class="btn btn-danger">Reset Responses</button>
                 <button id="NEW_USER" class="btn btn-primary">New Team</button>
                 <button id="EDIT_USER" class="btn btn-primary">Edit Teams</button>
-                <button class="btn btn-primary">Score Report</button>
+                <button id="SCORE_REPORT" class="btn btn-primary">Score Report</button>
             </div>
         </div>
 
@@ -85,7 +85,7 @@
             makeLeaderboard()
 
             $('#TEAM_LIST > li').click(function () {
-                alert(this)
+                {#alert(this)#}
             })
 
             $('#RESET_RESP').click(function () {/// Resets all users responses in the database
@@ -133,12 +133,19 @@
 
             $('#NEW_USER').click(function () { ///Opens form to create a new user.
                 popup("{{ url_for('new_team') }}", "NewTeam")
+
+
             })
 
             $('#EDIT_USER').click(function () {
                 popup("{{ url_for('team_table') }}", "Team Table")
+
             })
 
+            $('#SCORE_REPORT').click(function () {
+                window.open("{{ url_for('score_report') }}")
+                {#popup("{{ url_for('score_report') }}", "Team Table")#}
+            })
 
             setInterval(makeLeaderboard, 5000);
         })
@@ -147,22 +154,20 @@
 
     <script>
         function isNumber(value) {
+            // Function used to validate that a number is for point value field.
             return typeof value === 'number' && isFinite(value);
         }
 
+        let True = true
+        let False = true
 
         let docs = {{ team_docs }};
         let docs_b = {{ team_docs }};
 
-
-
-
-
+        // Generates the user list to input the team points.
         let docs_1 = docs.splice(0, 5)
         let arrayLength_1 = docs_1.length;
         for (var i = 0; i < arrayLength_1; i++) {
-
-            //Do something
 
             $('#TEAM_SET_1').append(`<span class="MontserratBlack"> ${docs_1[i].name}</span> <input id="${docs_1[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_1[i].points} points">`)
         }
@@ -171,8 +176,6 @@
         let arrayLength_2 = docs_2.length;
         for (var i = 0; i < arrayLength_2; i++) {
 
-            //Do something
-
             $('#TEAM_SET_2').append(`<span class="MontserratBlack"> ${docs_2[i].name}</span> <input id="${docs_2[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_2[i].points} points">`)
         }
 
@@ -180,24 +183,19 @@
         let arrayLength_3 = docs_3.length;
         for (var i = 0; i < arrayLength_3; i++) {
 
-            //Do something
-
             $('#TEAM_SET_3').append(`<span class="MontserratBlack"> ${docs_3[i].name}</span> <input id="${docs_3[i].name}" class="form-control MontserratBlack" type="text" placeholder="${docs_3[i].points} points">`)
         }
 
 
-
-
         $('select.event_list').change(function () {
             _event_id = $(this).children("option:selected").val()
-            alert(_event_id)
-
+            {#alert(_event_id)#}
 
 
         })
 
 
-
+        // If submit button is pressed, data each team points and event submission will be
         $('#AWRD_BTN').click(function () {
             docs_b.forEach(function (element) {
                 let event_id = $('select').val();
@@ -225,6 +223,7 @@
                             },
 
                             417: function (response) {
+                                console.log(response)
 
                             },
 
@@ -238,6 +237,7 @@
                 }
 
             })
+
 
 
             alert("Records Submitted.")

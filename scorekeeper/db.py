@@ -227,12 +227,14 @@ class TeamsDB:
             if new_response['event_id'] == old_response['event_id']:
                 doc['responses'].pop(i)
                 doc['points'] -= old_response['point_value']
+                new_response['points_awarded'] = True
                 doc['responses'].append(new_response)
                 doc['points'] += new_response['point_value']
 
                 self.collections.update_one({"name": new_response['team_name']}, {'$set': doc})
                 return True
 
+        new_response['points_awarded'] = True
         doc['responses'].append(new_response)
         doc['points'] += new_response['point_value']
 
@@ -354,6 +356,23 @@ class TeamsDB:
             return False
 
         pass
+
+    def get_all_responses(self):
+        result = self.collections.find({}) if self.collections.find({}) else None
+
+        if result:
+            new_data = []
+            for i, team_data in enumerate(result):
+                del team_data['_id']
+                if team_data['name'] != 'ringmaster':
+                    new_data.append(team_data)
+
+            return new_data
+        else:
+            return []
+
+
+
 
     def _default_model(self):
         return {

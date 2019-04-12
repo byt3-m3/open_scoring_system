@@ -1,36 +1,56 @@
 {
-    "event_id": "OCJ",
-    "artifacts": {
-        "file": ""
+  "event_id": "OCJ",
+  "title": "#OPCyberJustice",
+  "overview": "You have been called on for your cyber security knowledge, to assist in the protection of <b><span class='MainFontColor'>BG Griffin Olives Annual Cyber Warrior</span></b> event. Your Job is to protect her website from any potential threats that may be lurking on the net. We have been monitoring the new social media site <b class='MainFontColor2'>nGage</b>, and intel indicates there is a high chance of malicious activity occurring on cyber warrior website. Your team has been provided a PCAP file named <b class='MainFontColor'>telnet.pcapng</b> to start your mission. Your SOC and its skilled analyst have quite the reputation and we are counting on you to help protect our interest. Stay vigilant and remember Cyber Never Sleeps",
+  "tasks": [
+    "Restore the CyberWarrior Website.",
+    "Complete the questions"
+  ],
+  "artifacts": {
+    "file": ""
+  },
+  "questions": [
+    {
+      "q_id": "OCJ_1",
+      "text": "What is the password used to access the webserver?",
+      "answer": "w3llick",
+      "validation": [],
+      "point_value": 10
     },
-    "questions": [
-        {
-            "q_id": "OCJ_1",
-            "text": "What is the locations of the backup file?",
-            "answer": "ysbinstall_1000489_3.exe",
-            "validation": [],
-            "point_value": 25
-        },
-        {
-            "q_id": "OCJ_2",
-            "text": "What is the admin password used to access the webserver?",
-            "answer": "/ealderson/stuff",
-            "validation": [],
-            "point_value": 25
-        },
-        {
-            "q_id": "OCJ_3",
-            "text": "What is the IP address of the webserver server?",
-            "answer": "192.168.1.1",
-            "validation": [],
-            "point_value": 25
-        },
-        {
-            "q_id": "OCJ_4",
-            "text": "Provide the Frist and Last name of the social media acconut resposible for the hack.",
-            "answer": "Ivan Sobol",
-            "validation": [],
-            "point_value": 25
-        }
-    ]
+    {
+      "q_id": "OCJ_2",
+      "text": "What is the location of the backup archive?",
+      "answer": "/backup",
+      "validation": [],
+      "point_value": 10
+    },
+    {
+      "q_id": "OCJ_3",
+      "text": "What is the password used to unzip the back up file?",
+      "answer": "qwerty",
+      "validation": [],
+      "point_value": 25
+    },
+    {
+      "q_id": "OCJ_4",
+      "text": "What is the name of the file that contained the webserver restoral steps?",
+      "answer": "BICOE.txt",
+      "validation": [],
+      "point_value": 10
+    },
+    {
+      "q_id": "OCJ_5",
+      "text": "Provide the Frist and Last name of the social media acconut resposible for the hack.",
+      "answer": "Ivan Sobol",
+      "validation": [],
+      "point_value": 25
+    },
+    {
+      "q_id": "OCJ_6",
+      "text": "Who should be arrested for defacing the governmet website?",
+      "answer": "Brian Bauer",
+      "validation": [],
+      "point_value": 50
+    }
+  ]
 }

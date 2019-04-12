@@ -1,5 +1,8 @@
 import argparse
 import json
+import logging
+import os
+import socket
 
 from flask import Flask, render_template, request, session, redirect, url_for, g, Response
 
@@ -11,12 +14,35 @@ from scorekeeper.const import (JSON_RESPONSE_HEADERS,
 from scorekeeper.db import TeamsDB, EventsDB, BuzzerTrackerDB
 from scorekeeper.forms import LoginForm
 
+log_file_handler = logging.FileHandler(filename="log.txt", mode="a")
+log_formatter = logging.Formatter('%(levelname)s - %(asctime)s - %(message)s')
+log_file_handler.setFormatter(log_formatter)
+app_logger = logging.getLogger(__name__)
+
+app_logger.addHandler(log_file_handler)
+app_logger.setLevel(logging.INFO)
+
+__authour__ = 'Courtney Baxter Jr - Created 2019'
+
+# Extracts environment variables to be used for games
+try:
+    DB_HOST = socket.gethostbyname('db')
+    app_logger.info(f"Loaded db host by hostname {DB_HOST}")
+except:
+    DB_HOST = os.getenv("DB_HOST", "192.168.1.124")
+    app_logger.info(f"Loaded db host by env {DB_HOST}")
+
+DB_PORT = os.getenv("DB_PORT", "27017")
+APP_PORT = os.getenv("APP_PORT", "5000")
+
 # TODO: Establishes connection the  MongoDB Servers
-team_db = TeamsDB("192.168.99.100:27017")
-event_db = EventsDB("192.168.99.100:27017")
-buzzer_db = BuzzerTrackerDB("192.168.99.100:27017")
+
+team_db = TeamsDB(f"{DB_HOST}:{DB_PORT}")
+event_db = EventsDB(f"{DB_HOST}:{DB_PORT}")
+buzzer_db = BuzzerTrackerDB(f"{DB_HOST}:{DB_PORT}")
 
 
+# Helper Functions
 def validate_user(uname, password):
     """
     This function provides User validation for the specified username and password.
@@ -35,10 +61,11 @@ def validate_user(uname, password):
 
 app = Flask(__name__)
 
-# app.config['SECRET_KEY'] = os.urandom(24)
-app.config['SECRET_KEY'] = "MY_KEY"
+app.config['SECRET_KEY'] = os.urandom(24)
+# app.config['SECRET_KEY'] = "MY_KEY"
 
 
+# APP Routes
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     login_form = LoginForm()
@@ -206,6 +233,99 @@ def team_table():
     return render_template("team_table.j2", docs=new_docs)
 
 
+@app.route('/score_report', methods=['GET'])
+def score_report():
+    user = session['username']
+    if session['username'] == 'ringmaster':
+        all_team_responses = team_db.get_all_responses()
+        teams_data = []
+
+        for team in all_team_responses:
+            data_dict = {}
+            r_name = team['name']
+
+            data_dict['name'] = r_name
+            data_dict['points'] = team['points']
+            data_dict['responses'] = []
+
+            for response in team['responses']:
+
+                resp_dict = {}
+
+                r_event_id = response['event_id']
+                r_q_id = response['q_id']
+
+                resp_dict['event_id'] = r_event_id
+                resp_dict['q_id'] = r_q_id
+                resp_dict['points_awarded'] = str(response['points_awarded'])
+                resp_dict['attempts'] = response.get('past_attempts', response.get('attempts'))
+
+                question = event_db.get_question(r_event_id, r_q_id)
+
+                # resp_dict['title'] = question.get("title") if question is not None else ""
+                if question:
+                    resp_dict['question_text'] = question.get("text") if question.get("text") else ""
+                    resp_dict['title'] = event_db.get_event(r_event_id).get("title")
+
+
+
+                else:
+                    event_data = event_db.get_event("GAME_LIST")
+                    events = event_data.get("artifacts").get("events")
+                    for event in events:
+                        if event['event_id'] == r_event_id:
+                            resp_dict['title'] = event['title']
+
+                resp_dict['response'] = response['response']
+                resp_dict['point_value'] = response['point_value']
+                data_dict['responses'].append(resp_dict)
+
+                r_point_awarded = str(response['points_awarded'])
+
+            teams_data.append(data_dict)
+
+        return render_template("score_report.j2", team_data=teams_data, user=user)
+
+    team_doc = team_db.get_team_doc(session['username'])
+    data_dict = {}
+    data_dict['responses'] = []
+    for response in team_doc['responses']:
+        # if response['points_awarded'] is False:
+        #     break
+
+        resp_dict = {}
+
+        r_event_id = response['event_id']
+        r_q_id = response['q_id']
+
+        resp_dict['event_id'] = r_event_id
+        resp_dict['q_id'] = r_q_id
+        resp_dict['points_awarded'] = str(response['points_awarded'])
+        resp_dict['attempts'] = response.get('past_attempts', response.get('attempts'))
+        question = event_db.get_question(r_event_id, r_q_id)
+
+        if question:
+            resp_dict['question_text'] = question.get("text") if question.get("text") else ""
+            resp_dict['title'] = event_db.get_event(r_event_id).get("title")
+
+        else:
+            event_data = event_db.get_event("GAME_LIST")
+            events = event_data.get("artifacts").get("events")
+            for event in events:
+                if event['event_id'] == r_event_id:
+                    resp_dict['title'] = event['title']
+
+        resp_dict['response'] = response['response']
+        resp_dict['point_value'] = response['point_value']
+        data_dict['responses'].append(resp_dict)
+    data_dict['name'] = session['username']
+    data_dict['points'] = team_doc['points']
+    teams_data = [data_dict]
+    user = session['username']
+
+    return render_template("score_report.j2", team_data=teams_data, user=user)
+
+
 @app.before_request
 def before_request():
     g.user = None
@@ -298,7 +418,14 @@ def validate_response():
 
         # Checks if response attempts is greater than 3, if so points will be deducted.
         if new_response['attempts'] > 3:
+
             team_db.incr_points(name, point_val)
+            if isinstance(new_response.get("past_attempts"), int):
+                new_response['past_attempts'] += new_response['attempts']
+            else:
+                new_response['past_attempts'] = new_response['attempts']
+
+            # new_response['past_attempts'] += new_response['attempts']
             new_response['attempts'] = 0  # Resets attempts to 0
 
         team_db.update_response(name, event_id, q_id, new_response)
@@ -672,6 +799,7 @@ def remove_event():
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(
         description="CLI Helper for the OpenScoreServer WebApp")
 
@@ -680,9 +808,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     if args.debug:
-        app.run(debug=True, host="0.0.0.0")
+        app.run(debug=True, host="0.0.0.0", port=APP_PORT)
 
     if args.normal:
-        app.run(host="0.0.0.0")
+        app.run(host="0.0.0.0", port=APP_PORT)
 
     parser.print_help()

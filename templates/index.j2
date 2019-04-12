@@ -49,9 +49,9 @@
                         teams.forEach(function (element) {
                             if (element.name != "ringmaster") {
                                 if (element.alias) {
-                                    $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.alias} - ${element.points} pts</li>`);
+                                    $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.alias} - ${element.points}pts</li>`);
                                 } else {
-                                    $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.name.toUpperCase()} - ${element.points} pts</li>`);
+                                    $('#TEAM_LIST').append(`<li class="MontserratBlack list-group-item">${element.name.toUpperCase()}: ${element.points}pts</li>`);
                                 }
 
                             }

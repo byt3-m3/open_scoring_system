@@ -1,33 +1,39 @@
 {    
-	"event_id" : "PCAP1",
+    "event_id" : "PCAP1",
+    "title" : "PCAP Level 1",
+    "overview" : "Tier 1 support has noticed failed login attempts to the FTP server. The username appears to be correct; however, the password is incorrect. Incident Handlers have retrieved the PCAP file and logs from the server.",
+    "tasks" : [
+        "Gather Intel From PCAP file.",
+        "Complete the questions."
+    ],
     "artifacts" : {
         "file" : "sec-brutforce.pcapng"
     },
-    "questions" : [ 
+    "questions" : [
         {
             "q_id" : "PCAP1_1",
             "text" : "What protocol is being used to connect to the destination?",
             "answer" : "FTP",
-            "point_value" : 25,
-            "validation" : [ 
+            "point_value" : 10,
+            "validation" : [
                 "Apply filter 'ftp'"
             ]
-        }, 
+        },
         {
             "q_id" : "PCAP1_2",
             "text" : "What is the URL the attacker trying to gain access to?",
             "answer" : "creditus.com",
-            "point_value" : 25,
-            "validation" : [ 
-                "Apply filter 'ftp'", 
+            "point_value" : 15,
+            "validation" : [
+                "Apply filter 'ftp'",
                 "review info column"
             ]
-        }, 
+        },
         {
             "q_id" : "PCAP1_3",
             "text" : "What username is the attacker attempting to use?",
             "answer" : "Fred",
-            "point_value" : 25,
+            "point_value" : 10,
             "validation" : [ 
                 "right click on ftp packet, click follow tcp stream", 
                 "Look for 'USER'"

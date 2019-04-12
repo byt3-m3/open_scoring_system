@@ -1,0 +1,21 @@
+version: '3.1'
+
+services:
+  app:
+    image: cbaxter1988/scoring_server
+    ports:
+      - 5000:5000
+    environment:
+#      - DB_HOST=192.168.1.124
+      - DB_PORT=27017
+      - APP_PORT=5000
+
+
+    command: python /app/app.py -n
+
+  db:
+    image: cbaxter1988/score_db
+    ports:
+      - 27017:27017
+    volumes:
+      - /var/snap/docker/common/var-lib-docker/volumes/de8365aa512dc2b3efbb6247e948a0044233b2214164a4f9a0c3034538356289/_data:/data/db

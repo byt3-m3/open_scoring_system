@@ -1,0 +1,59 @@
+{
+  "event_id": "GAME_LIST",
+  "title": "2019 CyberWarrior Event List",
+  "artifacts": {
+    "events": [
+      {
+        "event_id": "RELAY_RACE",
+        "title": "Relay Race",
+        "questions": []
+      },
+      {
+        "event_id": "CYBER_JEOPARDY",
+        "title": "Cyber Jeopardy",
+        "questions": []
+      },
+      {
+        "event_id": "IFINITY_WAR",
+        "title": "Cyber Infinty War",
+        "questions": []
+      },
+      {
+        "event_id": "CYBER_MILLIONARE",
+        "title": "Who Wants To Be A Cyber-Millionaire",
+        "questions": []
+      },
+      {
+        "event_id": "AYSTACT",
+        "title": "Are You Smarter Than A CyberTech?",
+        "questions": []
+      },
+      {
+        "event_id": "ACTF",
+        "title": "ACTF Stress Test",
+        "questions": []
+      },
+      {
+        "event_id": "CYBER_BRIEFS",
+        "title": "Team Cyber Briefs",
+        "questions": []
+      },
+      {
+        "event_id": "WEAPONS",
+        "title": "Weapons Breakdown",
+        "questions": []
+      },
+      {
+        "event_id": "TACT_RADIO",
+        "title": "Tactical Radio Assembly",
+        "questions": []
+      },
+      {
+        "event_id": "CYBER_MILLIONARE",
+        "title": "Cyber Millionare",
+        "questions": []
+      }
+    ]
+  }
+}
+
