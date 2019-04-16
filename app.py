@@ -32,11 +32,11 @@ except:
     DB_HOST = os.getenv("DB_HOST", "192.168.1.124")
     app_logger.info(f"Loaded db host by env {DB_HOST}")
 
+# Loads ENVs
 DB_PORT = os.getenv("DB_PORT", "27017")
 APP_PORT = os.getenv("APP_PORT", "5000")
 
-# TODO: Establishes connection the  MongoDB Servers
-
+# Establishes connection the MongoDB Servers
 team_db = TeamsDB(f"{DB_HOST}:{DB_PORT}")
 event_db = EventsDB(f"{DB_HOST}:{DB_PORT}")
 buzzer_db = BuzzerTrackerDB(f"{DB_HOST}:{DB_PORT}")

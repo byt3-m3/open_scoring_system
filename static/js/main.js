@@ -59,7 +59,7 @@ function updateTeamPoints() {
                 docs.forEach(function (doc) {
                     $(`#${doc.name}`).attr("placeholder", `${doc.points} POINTS`).val("");
 
-                    console.log(doc)
+                    
                 })
 
 

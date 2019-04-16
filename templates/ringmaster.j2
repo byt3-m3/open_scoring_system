@@ -2,7 +2,7 @@
 
 {% block  content %}
 
-    <div class="container">
+    <div class="container" style="padding-bottom: 100px">
         <div class="row text-center" style="margin-bottom: 4%">
             <div class="col">
                 <img src="../static/img/usarcent_logo.png" alt="">
@@ -42,7 +42,7 @@
                     {% endfor %}
                 </select>
                 <select name="QUESTIONS" id="QUESTION_SELECT"
-                        class="mdb-select md-form form-control MontserratBlack">
+                        class="mdb-select md-form form-control MontserratBlack" style="margin-bottom: 25px">
                     <option style="font-size: 25px" value="" disabled selected>Select Question</option>
                 </select>
 
@@ -199,7 +199,61 @@
             if (_event_id === "CYBER_JEOPARDY") {
 
                 $('#QUESTION_SELECT option').remove()
+                $('#QUESTION_SELECT').append("<option style=\"font-size: 25px\" value=\"\" disabled selected>All</option>")
+                $.ajax({
+                    "url": "/api/v1/get_event_by_id",
+                    data: JSON.stringify({"event_id": _event_id}),
+                    contentType: 'application/json',
+                    method: 'POST',
+                    statusCode: {
+                        200: function (response) {
 
+                            if (response.result === true) {
+                                questions = response.data.questions
+
+                                questions.forEach(function (question) {
+                                    q_id = question.q_id
+                                    text = question.text
+
+                                    $('#QUESTION_SELECT').append(`<option id=${q_id} style="font-size: 25px"
+                                value=${q_id}>${text}</option>`)
+                                })
+
+                            }
+
+                        },
+                        201: function (response) {
+
+                        },
+
+                        400: function (response) {
+
+                        },
+                        404: function (response) {
+
+                        },
+
+                        417: function (response) {
+
+                        },
+                        500: function (response) {
+
+                        }
+                    }
+                })
+
+
+            } else {
+                 $('#QUESTION_SELECT option').remove()
+                $('#QUESTION_SELECT').append("<option style=\"font-size: 25px\" value=\"\" disabled selected>None</option>")
+            }
+
+
+            if (_event_id === "AYSTACT") {
+
+
+                $('#QUESTION_SELECT option').remove()
+                $('#QUESTION_SELECT').append("<option style=\"font-size: 25px\" value=\"\" disabled selected>All</option>")
                 $.ajax({
                     "url": "/api/v1/get_event_by_id",
                     data: JSON.stringify({"event_id": _event_id}),
@@ -245,11 +299,9 @@
 
             }
 
-            if (_event_id !== "CYBER_JEOPARDY") {
-                $('#QUESTION_SELECT option').remove()
-                $('#QUESTION_SELECT').append("<option style=\"font-size: 25px\" value=\"\" disabled selected>Nothing to select</option>")
 
-            }
+
+
 
         })
 
@@ -261,7 +313,7 @@
                 let q_id = $('#QUESTION_SELECT').val();
 
                 var BreakException = {};
-                console.log(q_id)
+
 
                 if (event_id && q_id) {
                     let team_name = element.name
@@ -286,7 +338,7 @@
                             },
 
                             417: function (response) {
-                                console.log(response)
+
 
                             },
 
@@ -318,7 +370,7 @@
                             },
 
                             417: function (response) {
-                                console.log(response)
+
 
                             },
 
@@ -356,8 +408,7 @@
             }
 
         })
-        {#console.log(docs.splice(0, 5));#}
-        {#console.log(docs.splice(0, 5))#}
+
     </script>
 
 {% endblock %}

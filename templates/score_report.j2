@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="../static/css/main.css">
 
 
-<div class="container help_font">
+<div class="container help_font" style="padding-bottom: 100px;padding-top: 50px">
     <div class="row justify-content-center">
         <img src="../static/img/cw_logo_bg.jpg" alt="">
     </div>
@@ -32,8 +32,12 @@
 
                             <p id="{{ data.name }}_{{ response.q_id }}"><b>Title:</b> {{ response.title }}</p>
                             <p><b>Question:</b> {{ response.question_text }}</p>
-                            <p><b>Response:</b> {{ response.response }}</p>
-                            <p><b>Total Attempts:</b> {{ response.attempts }}</p>
+                            {% if response.event_id != "CYBER_JEOPARDY" %}
+                                <p><b>Response:</b> {{ response.response }}</p>
+                                <p><b>Total Attempts:</b> {{ response.attempts }}</p>
+                            {% endif %}
+
+
                             <p><b>Points:</b> {{ response.point_value }}</p>
                         {% endif %}
 
@@ -62,7 +66,6 @@
 
     $(document).ready(function () {
         let teams_data = {{ team_data }};
-
 
 
         teams_data.forEach(function (team_data) {
