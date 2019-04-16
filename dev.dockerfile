@@ -1,4 +1,4 @@
-FROM cbaxter1988/scoring_server:dev
+FROM cbaxter1988/scoring_server:base
 
 COPY . /app
 

@@ -1,0 +1,192 @@
+{
+  "event_id": "CYBER_JEOPARDY",
+  "title": "Cyber Jeopardy",
+  "questions": [
+    {
+      "q_id": "MOVIES_100",
+      "text": "Movies for 100",
+      "point_value": 100,
+      "daily_double": false
+    },
+    {
+      "q_id": "MOVIES_200",
+      "text": "Movies for 200",
+      "point_value": 200,
+      "daily_double": false
+    },
+    {
+      "q_id": "MOVIES_300",
+      "text": "Movies for 300",
+      "point_value": 300,
+      "daily_double": false
+    },
+    {
+      "q_id": "MOVIES_400",
+      "text": "Movies for 400",
+      "point_value": 400,
+      "daily_double": false
+    },
+    {
+      "q_id": "MOVIES_500",
+      "text": "Movies for 500",
+      "point_value": 500,
+      "daily_double": true
+    },
+    {
+      "q_id": " INFAMOUS CODE_100",
+      "text": " infamous code for 100",
+      "point_value": 100,
+      "daily_double": false
+    },
+    {
+      "q_id": " INFAMOUS CODE_200",
+      "text": " infamous code for 200",
+      "point_value": 200,
+      "daily_double": false
+    },
+    {
+      "q_id": " INFAMOUS CODE_300",
+      "text": " infamous code for 300",
+      "point_value": 300,
+      "daily_double": false
+    },
+    {
+      "q_id": " INFAMOUS CODE_400",
+      "text": " infamous code for 400",
+      "point_value": 400,
+      "daily_double": false
+    },
+    {
+      "q_id": " INFAMOUS CODE_500",
+      "text": " infamous code for 500",
+      "point_value": 500,
+      "daily_double": false
+    },
+    {
+      "q_id": "CRYPTOGRAPHY_100",
+      "text": "Cryptography for 100",
+      "point_value": 100,
+      "daily_double": false
+    },
+    {
+      "q_id": "CRYPTOGRAPHY_200",
+      "text": "Cryptography for 200",
+      "point_value": 200,
+      "daily_double": false
+    },
+    {
+      "q_id": "CRYPTOGRAPHY_300",
+      "text": "Cryptography for 300",
+      "point_value": 300,
+      "daily_double": false
+    },
+    {
+      "q_id": "CRYPTOGRAPHY_400",
+      "text": "Cryptography for 400",
+      "point_value": 400,
+      "daily_double": false
+    },
+    {
+      "q_id": "CRYPTOGRAPHY_500",
+      "text": "Cryptography for 500",
+      "point_value": 500,
+      "daily_double": false
+    },
+    {
+      "q_id": "NOTABLES_100",
+      "text": "Notables for 100",
+      "point_value": 100,
+      "daily_double": false
+    },
+    {
+      "q_id": "NOTABLES_200",
+      "text": "Notables for 200",
+      "point_value": 200,
+      "daily_double": false
+    },
+    {
+      "q_id": "NOTABLES_300",
+      "text": "Notables for 300",
+      "point_value": 300,
+      "daily_double": false
+    },
+    {
+      "q_id": "NOTABLES_400",
+      "text": "Notables for 400",
+      "point_value": 400,
+      "daily_double": false
+    },
+    {
+      "q_id": "NOTABLES_500",
+      "text": "Notables for 500",
+      "point_value": 500,
+      "daily_double": false
+    },
+    {
+      "q_id": "L33T SPEAK_100",
+      "text": "L33t speak for 100",
+      "point_value": 100,
+      "daily_double": false
+    },
+    {
+      "q_id": "L33T SPEAK_200",
+      "text": "L33t speak for 200",
+      "point_value": 200,
+      "daily_double": false
+    },
+    {
+      "q_id": "L33T SPEAK_300",
+      "text": "L33t speak for 300",
+      "point_value": 300,
+      "daily_double": false
+    },
+    {
+      "q_id": "L33T SPEAK_400",
+      "text": "L33t speak for 400",
+      "point_value": 400,
+      "daily_double": false
+    },
+    {
+      "q_id": "L33T SPEAK_500",
+      "text": "L33t speak for 500",
+      "point_value": 500,
+      "daily_double": false
+    },
+    {
+      "q_id": "POTPOURRI_100",
+      "text": "Potpourri for 100",
+      "point_value": 100,
+      "daily_double": false
+    },
+    {
+      "q_id": "POTPOURRI_200",
+      "text": "Potpourri for 200",
+      "point_value": 200,
+      "daily_double": false
+    },
+    {
+      "q_id": "POTPOURRI_300",
+      "text": "Potpourri for 300",
+      "point_value": 300,
+      "daily_double": false
+    },
+    {
+      "q_id": "POTPOURRI_400",
+      "text": "Potpourri for 400",
+      "point_value": 400,
+      "daily_double": true
+    },
+    {
+      "q_id": "POTPOURRI_500",
+      "text": "Potpourri for 500",
+      "point_value": 500,
+      "daily_double": false
+    },
+    {
+      "q_id": "FINAL",
+      "text": "Final Jeopardy",
+      "point_value": 0,
+      "daily_double": true
+    }
+  ]
+}
