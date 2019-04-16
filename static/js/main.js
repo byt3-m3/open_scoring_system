@@ -46,7 +46,6 @@ function popup(mylink, windowname) {
     return false;
 }
 
-
 function updateTeamPoints() {
 
     $.ajax({
@@ -86,3 +85,5 @@ function updateTeamPoints() {
     })
 
 }
+
+

@@ -61,8 +61,8 @@ def validate_user(uname, password):
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.urandom(24)
-# app.config['SECRET_KEY'] = "MY_KEY"
+# app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SECRET_KEY'] = "MY_KEY"
 
 
 # APP Routes
@@ -258,7 +258,7 @@ def score_report():
                 resp_dict['event_id'] = r_event_id
                 resp_dict['q_id'] = r_q_id
                 resp_dict['points_awarded'] = str(response['points_awarded'])
-                resp_dict['attempts'] = response.get('past_attempts', response.get('attempts'))
+                resp_dict['attempts'] = response.get('past_attempts', response.get('attempts', 0))
 
                 question = event_db.get_question(r_event_id, r_q_id)
 
@@ -301,7 +301,7 @@ def score_report():
         resp_dict['event_id'] = r_event_id
         resp_dict['q_id'] = r_q_id
         resp_dict['points_awarded'] = str(response['points_awarded'])
-        resp_dict['attempts'] = response.get('past_attempts', response.get('attempts'))
+        resp_dict['attempts'] = response.get('past_attempts', response.get('attempts', 0))
         question = event_db.get_question(r_event_id, r_q_id)
 
         if question:
@@ -318,6 +318,7 @@ def score_report():
         resp_dict['response'] = response['response']
         resp_dict['point_value'] = response['point_value']
         data_dict['responses'].append(resp_dict)
+
     data_dict['name'] = session['username']
     data_dict['points'] = team_doc['points']
     teams_data = [data_dict]
@@ -403,6 +404,7 @@ def validate_response():
     # Checks if the question answer matches the users response, if True aware points and updated model
     if question.get("answer") == response:
         new_response['points_awarded'] = True
+        new_response['attempts'] += True
         team_db.incr_points(name, question.get("point_value"))
         team_db.update_response(name, event_id, q_id, new_response)
 
