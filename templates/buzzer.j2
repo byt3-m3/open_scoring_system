@@ -112,6 +112,7 @@
         $('document').ready(function () {
             buzz_check()
             setInterval(buzz_check, 8000)
+            setInterval(updateScore, 5000)
             // Triggers a reset of the forum and removal of the buzzer record in the database
             $('#RESET_BTN').click(function () {
 

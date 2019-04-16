@@ -33,7 +33,7 @@
 
         <div class="row">
             <div class="col">
-                <select class="mdb-select md-form form-control MontserratBlack event_list"
+                <select id="EVENT_SELECT" class="mdb-select md-form form-control MontserratBlack event_list"
                         style="margin-bottom: 20px;font-size: 20px">
                     <option style="font-size: 25px" value="" disabled selected>Select Activity</option>
                     {% for game in games_list %}
@@ -41,6 +41,11 @@
                                 value={{ game.event_id }}>{{ game.title }}</option>
                     {% endfor %}
                 </select>
+                <select name="QUESTIONS" id="QUESTION_SELECT"
+                        class="mdb-select md-form form-control MontserratBlack">
+                    <option style="font-size: 25px" value="" disabled selected>Select Question</option>
+                </select>
+
 
             </div>
 
@@ -189,8 +194,62 @@
 
         $('select.event_list').change(function () {
             _event_id = $(this).children("option:selected").val()
-            {#alert(_event_id)#}
 
+
+            if (_event_id === "CYBER_JEOPARDY") {
+
+                $('#QUESTION_SELECT option').remove()
+
+                $.ajax({
+                    "url": "/api/v1/get_event_by_id",
+                    data: JSON.stringify({"event_id": _event_id}),
+                    contentType: 'application/json',
+                    method: 'POST',
+                    statusCode: {
+                        200: function (response) {
+
+                            if (response.result === true) {
+                                questions = response.data.questions
+
+                                questions.forEach(function (question) {
+                                    q_id = question.q_id
+                                    text = question.text
+
+                                    $('#QUESTION_SELECT').append(`<option id=${q_id} style="font-size: 25px"
+                                value=${q_id}>${text}</option>`)
+                                })
+
+                            }
+
+                        },
+                        201: function (response) {
+
+                        },
+
+                        400: function (response) {
+
+                        },
+                        404: function (response) {
+
+                        },
+
+                        417: function (response) {
+
+                        },
+                        500: function (response) {
+
+                        }
+                    }
+                })
+
+
+            }
+
+            if (_event_id !== "CYBER_JEOPARDY") {
+                $('#QUESTION_SELECT option').remove()
+                $('#QUESTION_SELECT').append("<option style=\"font-size: 25px\" value=\"\" disabled selected>Nothing to select</option>")
+
+            }
 
         })
 
@@ -198,9 +257,45 @@
         // If submit button is pressed, data each team points and event submission will be
         $('#AWRD_BTN').click(function () {
             docs_b.forEach(function (element) {
-                let event_id = $('select').val();
+                let event_id = $('#EVENT_SELECT').val();
+                let q_id = $('#QUESTION_SELECT').val();
 
-                if (event_id) {
+                var BreakException = {};
+                console.log(q_id)
+
+                if (event_id && q_id) {
+                    let team_name = element.name
+                    let team_points = $(`#${element.name}`).val()
+
+                    $.ajax({
+                        "url": "{{ url_for("new_response") }}",
+                        data: JSON.stringify({
+                            "team_name": team_name,
+                            "event_id": event_id,
+                            "q_id": q_id,
+                            "response": "",
+                            "point_value": Number(team_points),
+                        }),
+                        contentType: 'application/json',
+                        method: 'POST',
+                        statusCode: {
+                            200: function (response) {
+
+                                event_id = ""
+
+                            },
+
+                            417: function (response) {
+                                console.log(response)
+
+                            },
+
+                            404: function (response) {
+
+                            }
+                        }
+                    })
+                } else {
                     /// Preform Update Activities here
                     let team_name = element.name
                     let team_points = $(`#${element.name}`).val()
@@ -238,10 +333,7 @@
 
             })
 
-
-
             alert("Records Submitted.")
-
             updateTeamPoints()
 
 

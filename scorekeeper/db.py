@@ -226,14 +226,17 @@ class TeamsDB:
         for i, old_response in enumerate(doc['responses']):
 
             if new_response['event_id'] == old_response['event_id']:
-                doc['responses'].pop(i)
-                doc['points'] -= old_response['point_value']
-                new_response['points_awarded'] = True
-                doc['responses'].append(new_response)
-                doc['points'] += new_response['point_value']
 
-                self.collections.update_one({"name": new_response['team_name']}, {'$set': doc})
-                return True
+                if new_response['q_id'] == old_response['q_id']:
+
+                    doc['responses'].pop(i)
+                    doc['points'] -= old_response['point_value']
+                    new_response['points_awarded'] = True
+                    doc['responses'].append(new_response)
+                    doc['points'] += new_response['point_value']
+
+                    self.collections.update_one({"name": new_response['team_name']}, {'$set': doc})
+                    return True
 
         new_response['points_awarded'] = True
         doc['responses'].append(new_response)

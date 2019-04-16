@@ -61,8 +61,8 @@ def validate_user(uname, password):
 
 app = Flask(__name__)
 
-# app.config['SECRET_KEY'] = os.urandom(24)
-app.config['SECRET_KEY'] = "MY_KEY"
+app.config['SECRET_KEY'] = os.urandom(24)
+# app.config['SECRET_KEY'] = "MY_KEY"
 
 
 # APP Routes
@@ -268,7 +268,6 @@ def score_report():
                     resp_dict['title'] = event_db.get_event(r_event_id).get("title")
 
 
-
                 else:
                     event_data = event_db.get_event("GAME_LIST")
                     events = event_data.get("artifacts").get("events")
@@ -440,7 +439,7 @@ def validate_response():
 def new_response():
     if request.json:
         data = request.json
-        print(data)
+
     if not event_db.get_event(data.get("event_id")):
         return Response(json.dumps({"result": False, "msg": f"Invalid event_id provided"}),
                         status=STATUS_417_EXPECTATION_FAILED,
@@ -449,7 +448,7 @@ def new_response():
     new_response = {
         "team_name": data['team_name'],
         "event_id": data['event_id'],
-        "q_id": data['q_id'],
+        "q_id": data.get("q_id", data['event_id']),
         "response": data['response'],
         "point_value": data.get("point_value", 0),
 
@@ -462,7 +461,7 @@ def new_response():
                                 status=STATUS_200_SUCCESS,
                                 headers=JSON_RESPONSE_HEADERS)
         except Exception as err:
-            print(err)
+
             return Response(json.dumps({"result": False, "msg": f"{str(err)}"}),
                             status=STATUS_400_BAD_REQUEST,
                             headers=JSON_RESPONSE_HEADERS)
@@ -636,7 +635,7 @@ def onload_buzz_check():
                             status=STATUS_200_SUCCESS,
                             headers=JSON_RESPONSE_HEADERS)
         else:
-            print(team_name)
+
             return Response(json.dumps({"doc": None, "result": False, "msg": f'{team_name} not found'}),
                             status=STATUS_417_EXPECTATION_FAILED,
                             headers=JSON_RESPONSE_HEADERS)
@@ -779,7 +778,7 @@ def teams():
             headers=JSON_RESPONSE_HEADERS)
 
     except Exception as err:
-        print(err)
+
         return Response()
 
 
@@ -797,6 +796,22 @@ def remove_event():
                         headers=JSON_RESPONSE_HEADERS)
     else:
         return Response(json.dumps({"msg": f'Nothing to remove', "result": True}), status=STATUS_417_EXPECTATION_FAILED,
+                        headers=JSON_RESPONSE_HEADERS)
+
+
+@app.route("/api/v1/get_event_by_id", methods=['POST'])
+def get_event_by_id():
+    data = request.json
+    event_id = data.get("event_id")
+    event_data = event_db.get_event(event_id)
+    if event_data:
+        del event_data['_id']
+        return Response(json.dumps({"msg": 'Successful', "result": True, "data": event_data}),
+                        status=STATUS_200_SUCCESS,
+                        headers=JSON_RESPONSE_HEADERS)
+    else:
+        return Response(json.dumps({"msg": f'{event_id} Not Found', "result": False, "data": None}),
+                        status=STATUS_200_SUCCESS,
                         headers=JSON_RESPONSE_HEADERS)
 
 
