@@ -29,7 +29,7 @@ try:
     DB_HOST = socket.gethostbyname('db')
     app_logger.info(f"Loaded db host by hostname {DB_HOST}")
 except:
-    DB_HOST = os.getenv("DB_HOST", "192.168.1.124")
+    DB_HOST = os.getenv("DB_HOST", "192.168.1.113")
     app_logger.info(f"Loaded db host by env {DB_HOST}")
 
 # Loads ENVs
@@ -399,6 +399,7 @@ def validate_response():
         "point_value": question['point_value'],
         "attempts": cached_resp.get("attempts", 0) if cached_resp is not None else 0
     }
+
 
     # Checks if the question answer matches the users response, if True aware points and updated model
     if question.get("answer") == response:

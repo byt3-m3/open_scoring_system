@@ -100,7 +100,7 @@
 
                     $.ajax({
                         "url": "{{ url_for("reset_all_responses") }}",
-                        data: {}, //Insert FormData feilds here.
+                        data: {}, //Insert FormData fields here.
                         method: 'GET',
                         statusCode: {
                             200: function (response) {
@@ -250,6 +250,55 @@
 
 
             if (_event_id === "AYSTACT") {
+
+
+                $('#QUESTION_SELECT option').remove()
+                $('#QUESTION_SELECT').append("<option style=\"font-size: 25px\" value=\"\" disabled selected>All</option>")
+                $.ajax({
+                    "url": "/api/v1/get_event_by_id",
+                    data: JSON.stringify({"event_id": _event_id}),
+                    contentType: 'application/json',
+                    method: 'POST',
+                    statusCode: {
+                        200: function (response) {
+
+                            if (response.result === true) {
+                                questions = response.data.questions
+
+                                questions.forEach(function (question) {
+                                    q_id = question.q_id
+                                    text = question.text
+
+                                    $('#QUESTION_SELECT').append(`<option id=${q_id} style="font-size: 25px"
+                                value=${q_id}>${text}</option>`)
+                                })
+
+                            }
+
+                        },
+                        201: function (response) {
+
+                        },
+
+                        400: function (response) {
+
+                        },
+                        404: function (response) {
+
+                        },
+
+                        417: function (response) {
+
+                        },
+                        500: function (response) {
+
+                        }
+                    }
+                })
+
+
+            }
+            if (_event_id === "CYBER_MILLIONARE") {
 
 
                 $('#QUESTION_SELECT option').remove()

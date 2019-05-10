@@ -20,8 +20,11 @@
         <div class="col col-sm text-center">
             <img class="center" src="../static/img/cw_logo_bg.jpg" alt="Best CyberWarrior Logo">
             <br>
+            <p class="h6 HeaderPoint MainFontColor" id="POINT_TOTAL">Developed by Courtney Baxter Jr.(USARCENT)</p>
+            <br>
             <p class="h3 TextFont font-weight-bold MainFontColor2">Logged in as: {{ team_data.name }}</p>
             <p class="h3 HeaderPoint MainFontColor" id="POINT_TOTAL">Point Total: <span id="TeamScore"></span>
+
         </div>
 
 
@@ -34,7 +37,8 @@
 
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
                         aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon MontserratBlack MainFontColor" style="font-size: 24px;">Options</span>
+                    <span class="navbar-toggler-icon MontserratBlack MainFontColor"
+                          style="font-size: 24px;">Options</span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul class="navbar-nav" style="font-size: 24px">
@@ -72,7 +76,8 @@
                                 <a class="dropdown-item MontserratBlack MainFontColor2" href="/opcyberjustice">#OpCyber
                                     Justice</a>
                                 <a class="dropdown-item MontserratBlack MainFontColor" href="{{ url_for("buzzer") }}">Buzzer</a>
-                                <a class="dropdown-item MontserratBlack MainFontColor2" href="{{ url_for('score_report') }}" target="_blank">Score Report</a>
+                                <a class="dropdown-item MontserratBlack MainFontColor2"
+                                   href="{{ url_for('score_report') }}" target="_blank">Score Report</a>
 
 
                             </div>
