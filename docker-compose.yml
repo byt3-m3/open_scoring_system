@@ -2,9 +2,9 @@ version: '3.1'
 
 services:
   app:
-    image: cbaxter1988/scoring_server
+    image: cbaxter1988/scoring_server:build2
     ports:
-      - 5000:5000
+      - 80:5000
     environment:
       - DB_PORT=27017
       - APP_PORT=5000

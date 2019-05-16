@@ -87,7 +87,26 @@
 
         $('document').ready(function () {
 
-            makeLeaderboard()
+            makeLeaderboard();
+
+            $('#EVENT_SELECT').change(function(){
+                {% for team in team_docs %}
+
+                    $('#{{ team.name }}').val("");
+
+                {% endfor %}
+
+            });
+
+            $('#QUESTION_SELECT').change(function(){
+                {% for team in team_docs %}
+
+                    $('#{{ team.name }}').val("");
+
+                {% endfor %}
+
+            });
+
 
             $('#TEAM_LIST > li').click(function () {
                 {#alert(this)#}

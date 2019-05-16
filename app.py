@@ -401,10 +401,10 @@ def validate_response():
     }
 
 
-    # Checks if the question answer matches the users response, if True aware points and updated model
+    # Checks if the question answer matches the users response, if True award points and updated model
     if question.get("answer") == response:
         new_response['points_awarded'] = True
-        new_response['attempts'] += True
+        new_response['attempts'] += 1
         team_db.incr_points(name, question.get("point_value"))
         team_db.update_response(name, event_id, q_id, new_response)
 
